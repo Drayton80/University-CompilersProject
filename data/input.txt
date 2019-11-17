@@ -1,9 +1,11 @@
-program teste; {programa exemplo
+program teste; {programá exemplo }
 var
     valor1: integer;
     valor2: real;
     valor_T: real;
 begin
     valor1 <= 10;
-    valor2 = 0.1 + 1.0;
-end. }
+    valor2 = 0.1 + 1.;
+    valor3 = 1 or 0 and 1;
+    { téste }
+end. 
