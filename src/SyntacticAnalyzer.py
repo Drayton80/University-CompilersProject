@@ -124,9 +124,74 @@ class SyntacticAnalyzer:
                 print("ERRO na Linha:", self._current_value['line'])
 
     def _aurgment(self):
-        pass
+        if self._current_value['token'] == '(':
+            self._next_value()
+            self._list_parameters1()
+        
+            if self._next_value()['token'] != ')':
+                print("ERRO na Linha:", self._current_value['line'])
+        else:
+            return None
+
+    def _list_parameters1(self):
+        self._next_value()
+        self._list_identifiers1()
+        
+        if self._next_value()['token'] == ":":
+            self._next_value()
+            self._type()
+
+            self._next_value()
+            self._list_parameters2()
+        else:
+            print("ERRO na Linha:", self._current_value['line'])
+
+    def _list_parameters2(self):
+        if self._current_value['token'] == ";":
+            self._next_value()
+            self._list_identifiers1()
+
+            if self._next_value()['token'] == ":":
+                self._next_value()
+                self._type()
+
+                self._next_value()
+                self._list_parameters2()
+            else:
+               print("ERRO na Linha:", self._current_value['line']) 
+        else:
+            return None
+
 
     def _compound_statement(self):
+        if self._current_value['token'] == 'begin':
+            self._next_value()
+            # More legible representation for Optional Statements:
+            if self._current_value['token'] == 'end':
+                return None
+            else:
+                self._list_statement1()
+
+                if self._next_value()['token'] != 'end':
+                    print("ERRO na Linha:", self._current_value['line'])
+            
+        else:
+            print("ERRO na Linha:", self._current_value['line'])      
+
+    # def _optional_statement(self):
+    #     if self._current_value['token'] != 'end':
+    #         self._next_value()
+    #         self._list_statement1()
+    #     else:
+    #         return None
+
+    def _list_statement1(self):
+        pass
+
+    def _list_statement2(self):
+        pass
+
+    def _statement(self):
         pass
 
     def program(self):
