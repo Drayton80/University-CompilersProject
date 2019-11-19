@@ -131,15 +131,15 @@ class LexicalAnalyzer:
             
             if classificacao == "Identificador":
                 if token in self._keywords:
-                    table.append([token, "Palavra reservada", line_index])
+                    table.append({'token': token, 'class': "Palavra reservada", 'line': line_index})
                 elif token in self._additives:
-                    table.append([token, "Aditivo", line_index])
+                    table.append({'token': token, 'class': "Aditivo", 'line': line_index})
                 elif token in self._multiplicatives:
-                    table.append([token, "Multiplicativo", line_index])
+                    table.append({'token': token, 'class': "Multiplicativo", 'line': line_index})
                 else:
-                    table.append([token, classificacao, line_index])
+                    table.append({'token': token, 'class': classificacao, 'line': line_index})
             elif classificacao != "":
-                table.append([token, classificacao, line_index])
+                table.append({'token': token, 'class': classificacao, 'line': line_index})
 
         line_index += 1
 
