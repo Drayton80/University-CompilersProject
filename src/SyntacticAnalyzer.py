@@ -13,7 +13,11 @@ class SyntacticAnalyzer:
         self._current_value = None
     
     def _next_value(self):
-        self._current_value = self._lexical_table.pop()
+        if self._lexical_table != []:
+            self._current_value = self._lexical_table.pop()
+        else:
+            self._current_value = {'token': '', 'class': '', 'line': ''}
+
         return self._current_value
 
     def _variables_declaration(self):
@@ -101,13 +105,12 @@ class SyntacticAnalyzer:
                 print("ERRO na Linha:", self._current_value['line'])
         else:
             return None
-        
     
     def _procedure_declaration(self):
         if self._current_value['token'] == 'procedure':
             if self._next_value()['class'] == "Identificador":
                 self._next_value()
-                self._aurgment()
+                self._argument()
                 
                 if self._next_value()['token'] == ';':
                     self._next_value()
@@ -123,7 +126,7 @@ class SyntacticAnalyzer:
             else:
                 print("ERRO na Linha:", self._current_value['line'])
 
-    def _aurgment(self):
+    def _argument(self):
         if self._current_value['token'] == '(':
             self._next_value()
             self._list_parameters1()
@@ -162,37 +165,91 @@ class SyntacticAnalyzer:
         else:
             return None
 
-
     def _compound_statement(self):
         if self._current_value['token'] == 'begin':
-            self._next_value()
             # More legible representation for Optional Statements:
-            if self._current_value['token'] == 'end':
+            if self._next_value()['token'] == 'end':
                 return None
             else:
                 self._list_statement1()
 
-                if self._next_value()['token'] != 'end':
+                if self._current_value['token'] != 'end':
                     print("ERRO na Linha:", self._current_value['line'])
             
         else:
             print("ERRO na Linha:", self._current_value['line'])      
 
-    # def _optional_statement(self):
-    #     if self._current_value['token'] != 'end':
-    #         self._next_value()
-    #         self._list_statement1()
-    #     else:
-    #         return None
+    def _optional_statement(self):
+        if self._current_value['token'] != 'end':
+            self._next_value()
+            self._list_statement1()
+        else:
+            return None
 
     def _list_statement1(self):
-        pass
+        self._statement()
+
+        self._next_value()
+        self._list_statement2()
 
     def _list_statement2(self):
-        pass
+        if self._current_value['token'] == ';':
+            self._next_value()
+            self._statement()
+            
+            if self._next_value()['token'] == 'end':
+                return None
+            else:
+                self._list_statement2()
+        else:
+            print("ERRO na Linha:", self._current_value['line'])   
 
     def _statement(self):
-        pass
+        if self._current_value['class'] == 'Identificador':
+            previous_value = self._current_value
+
+            if self._next_value()['token'] == ':=':
+                self._next_value()
+                self._variable()
+            else:
+                self._lexical_table.insert(0, self._current_value)
+                self._current_value = previous_value
+                self._activation_procedure()
+        
+        elif self._current_value['token'] == 'begin':
+            self._next_value()
+            self._compound_statement()
+        
+        elif self._current_value['token'] == 'while':
+            self._next_value()
+            self._expression()
+
+            if self._next_value()['token'] == 'do':
+                self._next_value()
+                self._statement()
+            else:
+                print("ERRO na Linha:", self._current_value['line']) 
+
+        elif self._current_value['token'] == 'if':
+            self._expression()
+
+            if self._next_value()['token'] == 'then':
+                self._statement()
+
+                self._next_value()
+                self._else()
+            else:
+                print("ERRO na Linha:", self._current_value['line']) 
+
+        else:
+            print("ERRO na Linha:", self._current_value['line']) 
+
+    def _else(self):
+        if self._current_value['token'] == 'else':
+            self._next_value()
+            self._statement()
+        else:
+            return None
 
     def program(self):
         if self._next_value()['token'] == 'program':
