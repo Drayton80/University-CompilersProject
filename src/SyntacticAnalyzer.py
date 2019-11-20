@@ -251,6 +251,122 @@ class SyntacticAnalyzer:
         else:
             return None
 
+    def _variable(self):
+        if self._current_value['class'] != "Identificador":
+            print("ERRO na Linha:", self._current_value['line'])
+
+    def _activation_procedure(self):
+        if self._current_value['class'] == "Identificador":
+            if self._next_value()['token'] == '(':
+                self._list_expression1()
+                if self._next_value()['token'] != ")":
+                    print("ERRO na Linha:", self._current_value['line'])
+        else:
+            #TODO - Ver com o draytim se isso n da melda
+            #Erro de que entrou no activation procedure e não tinha um identificador
+            print("ERRO na Linha:", self._current_value['line'])
+
+    def _list_expression1(self):
+        self._expression()
+
+        self._next_value()
+        self._list_expression2()
+
+    def _list_expression2(self):
+        if self._current_value['token'] == ',':
+            self._next_value()
+            self._expression()
+
+            self._next_value()
+            self._list_expression2()
+        else:
+            return None
+
+    def _expression(self):
+        self._simple_expression1()
+
+        #op_relacional já no if
+        if self._next_value()['class'] == "Relacional":
+
+            self._next_value()
+            self._expression()
+        else:
+            return None
+
+    def _simple_expression1(self):
+        #sinal já no if
+        if self._current_value['token'] in ['+', '-']:
+            self._next_value()
+            self._term1()
+        else:
+            self._term1()
+
+        self._next_value()
+        self._simple_expression2()
+
+    def _simple_expression2(self):
+        #Op aditiva já no if
+        if self._current_value['class'] == "Aditivo":
+
+            self._next_value()
+            self._term1()
+
+            self._next_value()
+            self._simple_expression2()
+        else:
+            return None
+
+    def _term1(self):
+        self._factor()
+
+        self._next_value()
+        self._term2()
+
+    def _term2(self):
+        #op_multiplicativo
+        if self._current_value['class'] == 'Multiplicativo':
+            self._next_value()
+            self._factor()
+
+            self._next_value()
+            self._term2()
+        else:
+            return None
+
+    def _factor(self):
+        if self._current_value['class'] == "Número inteiro":
+            return None
+        
+        elif self._current_value['class'] == "Número real":
+            return None
+        
+        elif self._current_value['token'] in ['true', 'false']:
+            return None
+
+        elif self._current_value['class'] == "identificador":
+            if self._next_value()['token'] == '(':
+                self._next_value()
+                self._list_expression1()
+
+                if self._next_value()['token'] != ')':
+                    print("ERRO na Linha:", self._current_value['line'])
+
+            else:
+                return None
+        elif self._current_value['token'] == '(':
+            self._next_value()
+            self._expression()
+
+            if self._next_value()['token'] != ')':
+                print("ERRO na Linha:", self._current_value['line'])
+
+        elif self._current_value['token'] == 'not':
+            self._next_value()
+            self._factor()
+
+        else:
+            print("ERRO na Linha:", self._current_value['line'])
+
     def program(self):
         if self._next_value()['token'] == 'program':
             if self._next_value()['class'] == 'Identificador':
