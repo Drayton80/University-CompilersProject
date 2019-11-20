@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join('..')))
 
 from src.LexicalAnalyzer import LexicalAnalyzer
+from src.SyntacticException import SyntacticException
 
 
 class SyntacticAnalyzer:
@@ -14,11 +15,11 @@ class SyntacticAnalyzer:
     
     def _next_value(self):
         if self._lexical_table != []:
-            self._current_value = self._lexical_table.pop()
+            self._current_value = self._lexical_table.pop(0)
         else:
             self._current_value = {'token': '', 'class': '', 'line': ''}
 
-        return self._current_value
+        return self._current_value        
 
     def _variables_declaration(self):
         if self._current_value['token'] == 'var':
@@ -38,9 +39,9 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._list_variable_declaration2()
             else:
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('; faltando', self._current_value['line'])
         else:
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('separador : faltando', self._current_value['line'])
 
     def _list_variable_declaration2(self):
         if self._current_value['class'] == 'Identificador':
@@ -54,9 +55,9 @@ class SyntacticAnalyzer:
                     self._next_value()
                     self._list_variable_declaration2()
                 else:
-                    print("ERRO na Linha:", self._current_value['line'])
+                    raise SyntacticException('; faltando', self._current_value['line'])
             else:
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('separador : faltando', self._current_value['line'])
         else:
             return None
 
@@ -65,7 +66,7 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_identifiers2()
         else:
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('identificador de variável faltando', self._current_value['line'])
 
     def _list_identifiers2(self):
         if self._current_value['token'] == ',':
@@ -73,7 +74,7 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._list_identifiers2()
             else:
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('identificador de variável faltando', self._current_value['line'])
         else:
             return None
 
@@ -85,7 +86,7 @@ class SyntacticAnalyzer:
         elif self._current_value['class'] == 'Booleano':
             return None
         else:
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('tipo da variável não especificado', self._current_value['line'])
 
     def _list_procedures_declaration1(self):
         self._procedure_declaration()
@@ -93,7 +94,7 @@ class SyntacticAnalyzer:
         if self._next_value()['token'] == ';':
             self._list_procedures_declaration2()
         else:
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('; faltando', self._current_value['line'])
 
     def _list_procedures_declaration2(self):
         if self._next_value()['token'] == 'procedure':
@@ -102,7 +103,7 @@ class SyntacticAnalyzer:
             if self._next_value()['token'] == ';':
                 self._list_procedures_declaration2()
             else:
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('; faltando', self._current_value['line'])
         else:
             return None
     
@@ -122,9 +123,9 @@ class SyntacticAnalyzer:
                     self._next_value()
                     self._compound_statement()
                 else:
-                    print("ERRO na Linha:", self._current_value['line'])
+                    raise SyntacticException('; faltando', self._current_value['line'])
             else:
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('procedure faltando', self._current_value['line'])
 
     def _argument(self):
         if self._current_value['token'] == '(':
@@ -132,7 +133,7 @@ class SyntacticAnalyzer:
             self._list_parameters1()
         
             if self._next_value()['token'] != ')':
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('', self._current_value['line'])
         else:
             return None
 
@@ -147,7 +148,7 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_parameters2()
         else:
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('', self._current_value['line'])
 
     def _list_parameters2(self):
         if self._current_value['token'] == ";":
@@ -161,7 +162,7 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._list_parameters2()
             else:
-               print("ERRO na Linha:", self._current_value['line']) 
+               raise SyntacticException('', self._current_value['line']) 
         else:
             return None
 
@@ -174,10 +175,10 @@ class SyntacticAnalyzer:
                 self._list_statement1()
 
                 if self._current_value['token'] != 'end':
-                    print("ERRO na Linha:", self._current_value['line'])
+                    raise SyntacticException('', self._current_value['line'])
             
         else:
-            print("ERRO na Linha:", self._current_value['line'])      
+            raise SyntacticException('', self._current_value['line'])      
 
     def _optional_statement(self):
         if self._current_value['token'] != 'end':
@@ -202,7 +203,7 @@ class SyntacticAnalyzer:
             else:
                 self._list_statement2()
         else:
-            print("ERRO na Linha:", self._current_value['line'])   
+            raise SyntacticException('', self._current_value['line'])   
 
     def _statement(self):
         if self._current_value['class'] == 'Identificador':
@@ -228,7 +229,7 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._statement()
             else:
-                print("ERRO na Linha:", self._current_value['line']) 
+                raise SyntacticException('', self._current_value['line']) 
 
         elif self._current_value['token'] == 'if':
             self._expression()
@@ -239,10 +240,10 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._else()
             else:
-                print("ERRO na Linha:", self._current_value['line']) 
+                raise SyntacticException('', self._current_value['line']) 
 
         else:
-            print("ERRO na Linha:", self._current_value['line']) 
+            raise SyntacticException('', self._current_value['line']) 
 
     def _else(self):
         if self._current_value['token'] == 'else':
@@ -253,18 +254,18 @@ class SyntacticAnalyzer:
 
     def _variable(self):
         if self._current_value['class'] != "Identificador":
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('', self._current_value['line'])
 
     def _activation_procedure(self):
         if self._current_value['class'] == "Identificador":
             if self._next_value()['token'] == '(':
                 self._list_expression1()
                 if self._next_value()['token'] != ")":
-                    print("ERRO na Linha:", self._current_value['line'])
+                    raise SyntacticException('', self._current_value['line'])
         else:
             #TODO - Ver com o draytim se isso n da melda
             #Erro de que entrou no activation procedure e não tinha um identificador
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('', self._current_value['line'])
 
     def _list_expression1(self):
         self._expression()
@@ -349,7 +350,7 @@ class SyntacticAnalyzer:
                 self._list_expression1()
 
                 if self._next_value()['token'] != ')':
-                    print("ERRO na Linha:", self._current_value['line'])
+                    raise SyntacticException('', self._current_value['line'])
 
             else:
                 return None
@@ -358,28 +359,42 @@ class SyntacticAnalyzer:
             self._expression()
 
             if self._next_value()['token'] != ')':
-                print("ERRO na Linha:", self._current_value['line'])
+                raise SyntacticException('', self._current_value['line'])
 
         elif self._current_value['token'] == 'not':
             self._next_value()
             self._factor()
 
         else:
-            print("ERRO na Linha:", self._current_value['line'])
+            raise SyntacticException('', self._current_value['line'])
 
     def program(self):
-        if self._next_value()['token'] == 'program':
-            if self._next_value()['class'] == 'Identificador':
-                if self._next_value()['token'] == ';':
-                    self._next_value()
-                    self._variables_declaration()
-                    
-                    self._next_value()
-                    self._list_procedures_declaration1()
-                    
-                    self._next_value()
-                    self._compound_statement()
+        print(self._current_value)
+        try:
+            if self._next_value()['token'] == 'program':
+                if self._next_value()['class'] == 'Identificador':
+                    if self._next_value()['token'] == ';':
+                        self._next_value()
+                        self._variables_declaration()
+                        
+                        self._next_value()
+                        self._list_procedures_declaration1()
+                        
+                        self._next_value()
+                        self._compound_statement()
 
-                    if self._next_value()['token'] != '.':
-                        print("ERRO na Linha:", self._current_value['line'])
+                        if self._next_value()['token'] != '.':
+                            raise SyntacticException('. final faltando', self._current_value['line'])
+                    else:
+                        raise SyntacticException('; faltando', self._current_value['line'])
+                else:
+                    raise SyntacticException('identificador esperado após program', self._current_value['line'])  
+            else:
+                print(self._current_value)
+                raise SyntacticException('faltando program no começo', self._current_value['line'])
+        
+        except SyntacticException as exception:
+            print(exception)
                     
+
+SyntacticAnalyzer('../data/input.txt').program()

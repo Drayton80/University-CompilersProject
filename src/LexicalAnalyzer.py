@@ -146,7 +146,7 @@ class LexicalAnalyzer:
         return table
         
         
-table = LexicalAnalyzer('../data/input.txt').create_table()
+# table = LexicalAnalyzer('../data/input.txt').create_table()
 
-for element in table:
-    print(element)
+# for element in table:
+#     print(element)
