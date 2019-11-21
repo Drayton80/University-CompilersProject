@@ -390,29 +390,30 @@ class SyntacticAnalyzer:
         for value in self._lexical_table:
             print(value)
         try:
-            if self._next_value()['token'] == 'program':
-                if self._next_value()['class'] == 'Identificador':
-                    if self._next_value()['token'] == ';':
-                        self._next_value()
-                        self._variables_declaration()
-                        
-                        self._next_value()
-                        self._list_procedures_declaration1()
-                        
-                        # print('\n', self._current_value)
-                        # print(self._lexical_table[0])
-                        self._next_value()
-                        self._compound_statement()
+            if self._lexical_table:
+                if self._next_value()['token'] == 'program':
+                    if self._next_value()['class'] == 'Identificador':
+                        if self._next_value()['token'] == ';':
+                            self._next_value()
+                            self._variables_declaration()
+                            
+                            self._next_value()
+                            self._list_procedures_declaration1()
+                            
+                            # print('\n', self._current_value)
+                            # print(self._lexical_table[0])
+                            self._next_value()
+                            self._compound_statement()
 
-                        if self._next_value()['token'] != '.':
-                            raise SyntacticException('. final faltando', self._current_value['line'])
+                            if self._next_value()['token'] != '.':
+                                raise SyntacticException('. final faltando', self._current_value['line'])
+                        else:
+                            raise SyntacticException('; faltando', self._current_value['line'])
                     else:
-                        raise SyntacticException('; faltando', self._current_value['line'])
+                        raise SyntacticException('identificador esperado após program', self._current_value['line'])  
                 else:
-                    raise SyntacticException('identificador esperado após program', self._current_value['line'])  
-            else:
-                print(self._current_value)
-                raise SyntacticException('faltando program no começo', self._current_value['line'])
+                    print(self._current_value)
+                    raise SyntacticException('faltando program no começo', self._current_value['line'])
         
         except SyntacticException as exception:
             print(exception)

@@ -39,17 +39,13 @@ class LexicalAnalyzer:
             raise WrongSymbolException()
 
     def state_identifier(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Identificador", character_index + 1, line_index + 1
-        elif re.search(r'[a-zA-Z0-9_]', code[character_index]):
+        if re.search(r'[a-zA-Z0-9_]', code[character_index]):
             return self.state_identifier(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Identificador", character_index, line_index
 
     def state_integer(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Número inteiro", character_index + 1, line_index + 1
-        elif re.search(r'[0-9]', code[character_index]):
+        if re.search(r'[0-9]', code[character_index]):
             return self.state_integer(code, line_index, character_index + 1, token + code[character_index])
         elif code[character_index] == '.':
             return self.state_real(code, line_index, character_index + 1, token + code[character_index])
@@ -57,31 +53,22 @@ class LexicalAnalyzer:
             return token, "Número inteiro", character_index, line_index
 
     def state_real(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Número real", character_index + 1, line_index + 1
-        elif re.search(r'[0-9]', code[character_index]):
+        if re.search(r'[0-9]', code[character_index]):
             return self.state_real(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Número real", character_index, line_index
     
     def state_delimeter(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Delimitador", character_index + 1, line_index + 1
-        elif code[character_index] == '=':
+        if code[character_index] == '=':
             return self.state_attribution(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Delimitador", character_index, line_index
 
     def state_attribution(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Atribuição", character_index + 1, line_index + 1
-        else:
-            return token, "Atribuição", character_index, line_index
+        return token, "Atribuição", character_index, line_index
 
     def state_relational(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Relacional", character_index + 1, line_index + 1
-        elif code[character_index - 1] == '>' and code[character_index] == '=' :
+        if code[character_index - 1] == '>' and code[character_index] == '=' :
             return token + code[character_index], "Relacional", character_index + 1, line_index
         elif code[character_index - 1] == '<' and code[character_index] in ['>', '='] :
             return token + code[character_index], "Relacional", character_index + 1, line_index
@@ -89,16 +76,10 @@ class LexicalAnalyzer:
             return token, "Relacional", character_index, line_index
 
     def state_additive(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Aditivo", character_index + 1, line_index + 1
-        else:
-            return token, "Aditivo", character_index, line_index
+        return token, "Aditivo", character_index, line_index
 
     def state_multiplicative(self, code, line_index, character_index, token):
-        if code[character_index] == "\n":
-            return token, "Multiplicativo", character_index + 1, line_index + 1
-        else:
-            return token, "Multiplicativo", character_index, line_index
+        return token, "Multiplicativo", character_index, line_index
 
     def state_comment(self, code, line_index, character_index, token):
         if character_index >= len(code):
@@ -140,8 +121,6 @@ class LexicalAnalyzer:
                     table.append({'token': token, 'class': classificacao, 'line': line_index})
             elif classificacao != "":
                 table.append({'token': token, 'class': classificacao, 'line': line_index})
-
-        line_index += 1
 
         return table
         
