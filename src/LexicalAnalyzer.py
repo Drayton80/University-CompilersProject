@@ -21,8 +21,10 @@ class LexicalAnalyzer:
             return self.state_identifier(code, line_index, character_index + 1, token + code[character_index])
         elif re.search(r'[0-9]', code[character_index]):
             return self.state_integer(code, line_index, character_index + 1, token + code[character_index])
-        elif re.search(r'[:;.,()]', code[character_index]):
-            return self.state_delimeter(code, line_index, character_index + 1, token + code[character_index])
+        elif re.search(r'[;.,()]', code[character_index]):
+            return self.state_delimeter1(code, line_index, character_index + 1, token + code[character_index])
+        elif re.search(r'[:]', code[character_index]):
+            return self.state_delimeter2(code, line_index, character_index + 1, token + code[character_index])
         elif re.search(r'[<>=]', code[character_index]):
             return self.state_relational(code, line_index, character_index + 1, token + code[character_index])
         elif re.search(r'[+\-]', code[character_index]):
@@ -58,7 +60,10 @@ class LexicalAnalyzer:
         else:
             return token, "Número real", character_index, line_index
     
-    def state_delimeter(self, code, line_index, character_index, token):
+    def state_delimeter1(self, code, line_index, character_index, token):
+        return token, "Delimitador", character_index, line_index
+    
+    def state_delimeter2(self, code, line_index, character_index, token):
         if code[character_index] == '=':
             return self.state_attribution(code, line_index, character_index + 1, token + code[character_index])
         else:
@@ -109,6 +114,8 @@ class LexicalAnalyzer:
             except WrongSymbolException as exception:
                 print(exception)
                 return []
+            except IndexError:
+                pass
             
             if classificacao == "Identificador":
                 if token in self._keywords:
