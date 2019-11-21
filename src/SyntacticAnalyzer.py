@@ -83,6 +83,7 @@ class SyntacticAnalyzer:
 
     def _list_identifiers2(self):
         if self._current_value['token'] == ',':
+            self._next_value()
             if self._current_value['class'] == 'Identificador':
                 self._next_value()
                 self._list_identifiers2()
@@ -233,9 +234,11 @@ class SyntacticAnalyzer:
             self._compound_statement()
         
         elif self._current_value['token'] == 'while':
+            
             self._next_value()
             self._expression()
 
+            print(self._lexical_table[0])
             if self._next_value()['token'] == 'do':
                 self._next_value()
                 self._statement()
@@ -384,9 +387,6 @@ class SyntacticAnalyzer:
             raise SyntacticException('Fator vazio', self._current_value['line'])
 
     def program(self):
-        # print("Entrou aqui")
-        # print('\n', self._current_value)
-        # print(self._lexical_table[0])
         for value in self._lexical_table:
             print(value)
         try:
