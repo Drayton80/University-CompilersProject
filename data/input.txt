@@ -1,11 +1,10 @@
-program teste; {programá ;exemplo }
+program teste; {programa exemplo}
 var
     valor1: integer;
     valor2: real;
-    valor_T: real;
 begin
-    valor1 := 9;
-    valor2 := 1.;
-    valor3 := 1.2;
-    { téste }
-end. 
+    while valor1 < 10 do valor1 := valor1 + 1;
+    if valor2 = valor1 then valor2 := valor1 + 1 else valor2 := valor1;
+    valor1 := 10;
+    valor2 := 0.1;
+end.

@@ -235,10 +235,9 @@ class SyntacticAnalyzer:
         
         elif self._current_value['token'] == 'while':
             
+
             self._next_value()
             self._expression()
-
-            print(self._lexical_table[0])
             if self._next_value()['token'] == 'do':
                 self._next_value()
                 self._statement()
@@ -246,15 +245,16 @@ class SyntacticAnalyzer:
                 raise SyntacticException('Faltando \'do\' após \'while\'', self._current_value['line']) 
 
         elif self._current_value['token'] == 'if':
+            self._next_value()
             self._expression()
-
             if self._next_value()['token'] == 'then':
+                self._next_value()
                 self._statement()
 
                 self._next_value()
                 self._else()
             else:
-                raise SyntacticException('Faltando \'Then\' esperado', self._current_value['line']) 
+                raise SyntacticException('Faltando \'then\' esperado', self._current_value['line']) 
 
         else:
             raise SyntacticException('Comando vazio', self._current_value['line']) 
@@ -277,6 +277,9 @@ class SyntacticAnalyzer:
                 
                 if self._current_value['token'] != ")":
                     raise SyntacticException('Procedimento faltando fechamento \')\'', self._current_value['line'])
+            else:
+                self._previous_value()
+                return None
         else:
             #TODO - Ver com o draytim se isso n da melda
             #Erro de que entrou no activation procedure e não tinha um identificador
@@ -284,7 +287,7 @@ class SyntacticAnalyzer:
 
     def _list_expression1(self):
         self._expression()
-
+        print('saiu')
         self._next_value()
         self._list_expression2()
 
@@ -292,7 +295,7 @@ class SyntacticAnalyzer:
         if self._current_value['token'] == ',':
             self._next_value()
             self._expression()
-
+            
             self._next_value()
             self._list_expression2()
         else:
@@ -300,12 +303,12 @@ class SyntacticAnalyzer:
 
     def _expression(self):
         self._simple_expression1()
-
-        if self._current_value['class'] == "Relacional":
+        if self._next_value()['class'] == "Relacional":
 
             self._next_value()
             self._expression()
         else:
+            self._previous_value()
             return None
 
     def _simple_expression1(self):
@@ -316,10 +319,12 @@ class SyntacticAnalyzer:
         else:
             self._term1()
 
+        
         self._next_value()
         self._simple_expression2()
 
     def _simple_expression2(self):
+
         #Op aditiva já no if
         if self._current_value['class'] == "Aditivo":
             self._next_value()
@@ -334,7 +339,6 @@ class SyntacticAnalyzer:
 
     def _term1(self):
         self._factor()
-
         self._next_value()
         self._term2()
 
@@ -347,12 +351,14 @@ class SyntacticAnalyzer:
             self._next_value()
             self._term2()
         else:
+            
             #TODO - Não sei se precisa
             #Vamos retornar a ultima posição, pois não há uma continuação
             self._previous_value()
             return None
 
     def _factor(self):
+
         if self._current_value['class'] == "Número inteiro":
             return None
         
@@ -362,15 +368,15 @@ class SyntacticAnalyzer:
         elif self._current_value['token'] in ['true', 'false']:
             return None
 
-        elif self._current_value['class'] == "identificador":
+        elif self._current_value['class'] == "Identificador":
             if self._next_value()['token'] == '(':
                 self._next_value()
                 self._list_expression1()
 
                 if self._next_value()['token'] != ')':
                     raise SyntacticException('Fator faltando fechamento \')\'', self._current_value['line'])
-
             else:
+                self._previous_value()
                 return None
         elif self._current_value['token'] == '(':
             self._next_value()
