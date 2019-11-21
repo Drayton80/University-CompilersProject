@@ -147,7 +147,7 @@ class SyntacticAnalyzer:
             self._list_parameters1()
         
             if self._current_value['token'] != ')':
-                raise SyntacticException('', self._current_value['line'])
+                raise SyntacticException('Argumento sem fechamento \')\'', self._current_value['line'])
         else:
             return None
 
@@ -161,7 +161,7 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_parameters2()
         else:
-            raise SyntacticException('', self._current_value['line'])
+            raise SyntacticException('Faltando separador \':\'', self._current_value['line'])
 
     def _list_parameters2(self):
         if self._current_value['token'] == ";":
@@ -175,7 +175,7 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._list_parameters2()
             else:
-               raise SyntacticException('', self._current_value['line']) 
+               raise SyntacticException('Faltando separador \':\'', self._current_value['line']) 
         else:
             return None
 
@@ -188,10 +188,10 @@ class SyntacticAnalyzer:
                 self._list_statement1()
 
                 if self._current_value['token'] != 'end':
-                    raise SyntacticException('', self._current_value['line'])
+                    raise SyntacticException('Comando composto não fechado com end', self._current_value['line'])
             
         else:
-            raise SyntacticException('', self._current_value['line'])      
+            raise SyntacticException('Comando composto não iniciado com begin', self._current_value['line'])      
 
     def _optional_statement(self):
         if self._current_value['token'] != 'end':
@@ -206,23 +206,24 @@ class SyntacticAnalyzer:
         self._next_value()
         self._list_statement2()
 
-    def _list_statement2(self):
+    def _list_statement2(self):        
         if self._current_value['token'] == ';':
             self._next_value()
+            if self._current_value['token'] == 'end':
+                return None
             self._statement()
             
-            if self._next_value()['token'] == 'end':
-                return None
-            else:
-                self._list_statement2()
+            self._next_value()
+            self._list_statement2()
         else:
-            raise SyntacticException('', self._current_value['line'])   
+            raise SyntacticException('Faltando separador \';\' entre comandos', self._current_value['line'])   
 
     def _statement(self):
-        if self._current_value['class'] == 'Identificador':            
+        if self._current_value['class'] == 'Identificador':         
             if self._next_value()['token'] == ':=':
                 self._next_value()
-                self._variable()
+                # self._variable() #Perguntar pro draytim
+                self._expression()
             else:
                 self._previous_value()
                 self._activation_procedure()
@@ -239,7 +240,7 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._statement()
             else:
-                raise SyntacticException('', self._current_value['line']) 
+                raise SyntacticException('Faltando \'do\' após \'while\'', self._current_value['line']) 
 
         elif self._current_value['token'] == 'if':
             self._expression()
@@ -250,10 +251,10 @@ class SyntacticAnalyzer:
                 self._next_value()
                 self._else()
             else:
-                raise SyntacticException('', self._current_value['line']) 
+                raise SyntacticException('Faltando \'Then\' esperado', self._current_value['line']) 
 
         else:
-            raise SyntacticException('', self._current_value['line']) 
+            raise SyntacticException('Comando vazio', self._current_value['line']) 
 
     def _else(self):
         if self._current_value['token'] == 'else':
@@ -264,7 +265,7 @@ class SyntacticAnalyzer:
 
     def _variable(self):
         if self._current_value['class'] != "Identificador":
-            raise SyntacticException('', self._current_value['line'])
+            raise SyntacticException('Identificador esperado', self._current_value['line'])
 
     def _activation_procedure(self):
         if self._current_value['class'] == "Identificador":
@@ -272,11 +273,11 @@ class SyntacticAnalyzer:
                 self._list_expression1()
                 
                 if self._current_value['token'] != ")":
-                    raise SyntacticException('', self._current_value['line'])
+                    raise SyntacticException('Procedimento faltando fechamento \')\'', self._current_value['line'])
         else:
             #TODO - Ver com o draytim se isso n da melda
             #Erro de que entrou no activation procedure e não tinha um identificador
-            raise SyntacticException('', self._current_value['line'])
+            raise SyntacticException('Procedimento Vazio', self._current_value['line'])
 
     def _list_expression1(self):
         self._expression()
@@ -297,8 +298,7 @@ class SyntacticAnalyzer:
     def _expression(self):
         self._simple_expression1()
 
-        #op_relacional já no if
-        if self._next_value()['class'] == "Relacional":
+        if self._current_value['class'] == "Relacional":
 
             self._next_value()
             self._expression()
@@ -319,13 +319,14 @@ class SyntacticAnalyzer:
     def _simple_expression2(self):
         #Op aditiva já no if
         if self._current_value['class'] == "Aditivo":
-
             self._next_value()
             self._term1()
 
             self._next_value()
             self._simple_expression2()
         else:
+            #Vamos retornar a ultima posição, pois não há uma continuação
+            self._previous_value()
             return None
 
     def _term1(self):
@@ -343,6 +344,9 @@ class SyntacticAnalyzer:
             self._next_value()
             self._term2()
         else:
+            #TODO - Não sei se precisa
+            #Vamos retornar a ultima posição, pois não há uma continuação
+            self._previous_value()
             return None
 
     def _factor(self):
@@ -361,7 +365,7 @@ class SyntacticAnalyzer:
                 self._list_expression1()
 
                 if self._next_value()['token'] != ')':
-                    raise SyntacticException('', self._current_value['line'])
+                    raise SyntacticException('Fator faltando fechamento \')\'', self._current_value['line'])
 
             else:
                 return None
@@ -370,16 +374,19 @@ class SyntacticAnalyzer:
             self._expression()
 
             if self._next_value()['token'] != ')':
-                raise SyntacticException('', self._current_value['line'])
+                raise SyntacticException('Fator faltando fechamento \')\'', self._current_value['line'])
 
         elif self._current_value['token'] == 'not':
             self._next_value()
             self._factor()
 
         else:
-            raise SyntacticException('', self._current_value['line'])
+            raise SyntacticException('Fator vazio', self._current_value['line'])
 
     def program(self):
+        # print("Entrou aqui")
+        # print('\n', self._current_value)
+        # print(self._lexical_table[0])
         for value in self._lexical_table:
             print(value)
         try:
@@ -392,8 +399,8 @@ class SyntacticAnalyzer:
                         self._next_value()
                         self._list_procedures_declaration1()
                         
-                        print('\n', self._current_value)
-                        print(self._lexical_table[0])
+                        # print('\n', self._current_value)
+                        # print(self._lexical_table[0])
                         self._next_value()
                         self._compound_statement()
 
