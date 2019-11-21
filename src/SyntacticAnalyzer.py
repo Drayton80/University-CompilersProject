@@ -12,14 +12,26 @@ class SyntacticAnalyzer:
     def __init__(self, code_path: str):
         self._lexical_table = LexicalAnalyzer(code_path).create_table()
         self._current_value = None
+        self._old_value = None
     
     def _next_value(self):
         if self._lexical_table != []:
+            self._old_value = self._current_value
             self._current_value = self._lexical_table.pop(0)
         else:
             self._current_value = {'token': '', 'class': '', 'line': ''}
 
-        return self._current_value        
+        return self._current_value
+
+    def _previous_value(self):
+        if self._old_value:
+            if self._current_value['token'] != '':
+                self._lexical_table.insert(0, self._current_value)
+                
+            self._current_value = self._old_value
+        
+        return self._old_value
+
 
     def _variables_declaration(self):
         if self._current_value['token'] == 'var':
@@ -30,8 +42,8 @@ class SyntacticAnalyzer:
 
     def _list_variable_declaration1(self):
         self._list_identifiers1()
-
-        if self._next_value()['token'] == ':':
+        
+        if self._current_value['token'] == ':':
             self._next_value()
             self._type()
             
@@ -47,7 +59,7 @@ class SyntacticAnalyzer:
         if self._current_value['class'] == 'Identificador':
             self._list_identifiers1()
             
-            if self._next_value()['token'] == ':':
+            if self._current_value['token'] == ':':
                 self._next_value()
                 self._type()
                 
@@ -59,6 +71,7 @@ class SyntacticAnalyzer:
             else:
                 raise SyntacticException('separador : faltando', self._current_value['line'])
         else:
+            self._previous_value()
             return None
 
     def _list_identifiers1(self):
@@ -79,25 +92,13 @@ class SyntacticAnalyzer:
             return None
 
     def _type(self):
-        if self._current_value['class'] == 'Número inteiro':
-            return None
-        elif self._current_value['class'] == 'Número real':
-            return None
-        elif self._current_value['class'] == 'Booleano':
+        if self._current_value['token'] in ['integer', 'real', 'boolean', 'char', 'string']:
             return None
         else:
             raise SyntacticException('tipo da variável não especificado', self._current_value['line'])
 
     def _list_procedures_declaration1(self):
-        self._procedure_declaration()
-
-        if self._next_value()['token'] == ';':
-            self._list_procedures_declaration2()
-        else:
-            raise SyntacticException('; faltando', self._current_value['line'])
-
-    def _list_procedures_declaration2(self):
-        if self._next_value()['token'] == 'procedure':
+        if self._current_value['token'] == 'procedure':
             self._procedure_declaration()
 
             if self._next_value()['token'] == ';':
@@ -105,6 +106,19 @@ class SyntacticAnalyzer:
             else:
                 raise SyntacticException('; faltando', self._current_value['line'])
         else:
+            self._previous_value()
+            return None
+
+    def _list_procedures_declaration2(self):
+        if self._current_value['token'] == 'procedure':
+            self._procedure_declaration()
+
+            if self._next_value()['token'] == ';':
+                self._list_procedures_declaration2()
+            else:
+                raise SyntacticException('; faltando', self._current_value['line'])
+        else:
+            self._previous_value()
             return None
     
     def _procedure_declaration(self):
@@ -132,16 +146,15 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_parameters1()
         
-            if self._next_value()['token'] != ')':
+            if self._current_value['token'] != ')':
                 raise SyntacticException('', self._current_value['line'])
         else:
             return None
 
     def _list_parameters1(self):
-        self._next_value()
         self._list_identifiers1()
         
-        if self._next_value()['token'] == ":":
+        if self._current_value['token'] == ":":
             self._next_value()
             self._type()
 
@@ -155,7 +168,7 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_identifiers1()
 
-            if self._next_value()['token'] == ":":
+            if self._current_value['token'] == ":":
                 self._next_value()
                 self._type()
 
@@ -206,15 +219,12 @@ class SyntacticAnalyzer:
             raise SyntacticException('', self._current_value['line'])   
 
     def _statement(self):
-        if self._current_value['class'] == 'Identificador':
-            previous_value = self._current_value
-
+        if self._current_value['class'] == 'Identificador':            
             if self._next_value()['token'] == ':=':
                 self._next_value()
                 self._variable()
             else:
-                self._lexical_table.insert(0, self._current_value)
-                self._current_value = previous_value
+                self._previous_value()
                 self._activation_procedure()
         
         elif self._current_value['token'] == 'begin':
@@ -260,7 +270,8 @@ class SyntacticAnalyzer:
         if self._current_value['class'] == "Identificador":
             if self._next_value()['token'] == '(':
                 self._list_expression1()
-                if self._next_value()['token'] != ")":
+                
+                if self._current_value['token'] != ")":
                     raise SyntacticException('', self._current_value['line'])
         else:
             #TODO - Ver com o draytim se isso n da melda
@@ -369,7 +380,8 @@ class SyntacticAnalyzer:
             raise SyntacticException('', self._current_value['line'])
 
     def program(self):
-        print(self._current_value)
+        for value in self._lexical_table:
+            print(value)
         try:
             if self._next_value()['token'] == 'program':
                 if self._next_value()['class'] == 'Identificador':
@@ -380,6 +392,8 @@ class SyntacticAnalyzer:
                         self._next_value()
                         self._list_procedures_declaration1()
                         
+                        print('\n', self._current_value)
+                        print(self._lexical_table[0])
                         self._next_value()
                         self._compound_statement()
 
