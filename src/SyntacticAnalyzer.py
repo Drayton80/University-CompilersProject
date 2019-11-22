@@ -102,8 +102,8 @@ class SyntacticAnalyzer:
     def _list_procedures_declaration1(self):
         if self._current_value['token'] == 'procedure':
             self._procedure_declaration()
-
             if self._next_value()['token'] == ';':
+                self._next_value()
                 self._list_procedures_declaration2()
             else:
                 raise SyntacticException('; faltando', self._current_value['line'])
@@ -114,8 +114,8 @@ class SyntacticAnalyzer:
     def _list_procedures_declaration2(self):
         if self._current_value['token'] == 'procedure':
             self._procedure_declaration()
-
             if self._next_value()['token'] == ';':
+                self._next_value()
                 self._list_procedures_declaration2()
             else:
                 raise SyntacticException('; faltando', self._current_value['line'])
@@ -189,7 +189,6 @@ class SyntacticAnalyzer:
             if self._next_value()['token'] == 'end':
                 return None
             else:
-                
                 self._list_statement1()
                 if self._current_value['token'] != 'end':
                     raise SyntacticException('Comando composto não fechado com end', self._current_value['line'])
@@ -206,31 +205,22 @@ class SyntacticAnalyzer:
 
     def _list_statement1(self):
         self._statement()
-
         self._next_value()
         self._list_statement2()
 
     def _list_statement2(self):
-        print("chegou aqui\n")
-        print(self._current_value)
-        print(self._lexical_table[0]) 
         if self._current_value['token'] == ';':
             self._next_value()
             if self._current_value['token'] == 'end':
                 return None
             self._statement()
-            
+
             self._next_value()
             self._list_statement2()
-        
-        elif self._current_value['token'] == 'end':
-            
-            self._next_value()
-            self._statement()
-
 
         else:
-            raise SyntacticException('Faltando fechamento de comandos', self._current_value['line'])   
+            self._previous_value()
+            return None
 
     def _statement(self):
         if self._current_value['class'] == 'Identificador':         
@@ -239,6 +229,7 @@ class SyntacticAnalyzer:
                 # self._variable() #Perguntar pro draytim
                 self._expression()
             else:
+                print("Entrou activation procedure ************8")
                 self._previous_value()
                 self._activation_procedure()
         
@@ -284,6 +275,7 @@ class SyntacticAnalyzer:
     def _activation_procedure(self):
         if self._current_value['class'] == "Identificador":
             if self._next_value()['token'] == '(':
+                self._next_value()
                 self._list_expression1()
                 
                 if self._current_value['token'] != ")":
@@ -298,7 +290,6 @@ class SyntacticAnalyzer:
 
     def _list_expression1(self):
         self._expression()
-        print('saiu')
         self._next_value()
         self._list_expression2()
 
@@ -369,6 +360,10 @@ class SyntacticAnalyzer:
             return None
 
     def _factor(self):
+        print('\nchegou aqui\n')
+        print(self._old_value)
+        print(self._current_value)
+        print(self._lexical_table[0])
 
         if self._current_value['class'] == "Número inteiro":
             return None
@@ -381,6 +376,7 @@ class SyntacticAnalyzer:
 
         elif self._current_value['class'] == "Identificador":
             if self._next_value()['token'] == '(':
+
                 self._next_value()
                 self._list_expression1()
 
@@ -390,6 +386,7 @@ class SyntacticAnalyzer:
                 self._previous_value()
                 return None
         elif self._current_value['token'] == '(':
+            print("entrou expressão simples")
             self._next_value()
             self._expression()
 
@@ -417,8 +414,6 @@ class SyntacticAnalyzer:
                             self._next_value()
                             self._list_procedures_declaration1()
                             
-                            # print('\n', self._current_value)
-                            # print(self._lexical_table[0])
                             self._next_value()
                             self._compound_statement()
 
