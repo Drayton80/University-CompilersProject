@@ -2,6 +2,9 @@
 
 program{...Comentário;...}teste;
 
+{Main/;/;/}
+var x, y: integer;
+
 {Função que vai decrementando um número enquanto soma 
 ele "n" vezes; Caso o número chegue a 0, nós vamos resetar
 o número e continuar a decrementar e somar.}
@@ -18,9 +21,8 @@ procedure sum_n_times (number, n: integer);
         while count <= n do
             begin
 
-                {Caso o valor de number seja diferente de 0}
-                if (number <> 0) then begin
-
+                if (number <> 0) then 
+                    begin
                         total := total + number;
                         number := number - 1;
                         count :=count + 1;
@@ -31,15 +33,14 @@ procedure sum_n_times (number, n: integer);
                     begin
                        number:= aux;
                     end
+                ;
             end
+        ;
 
         number := total;
     end
 
-{Main/;/;/}
-var x, y: integer;
-{Inicio do programa}begin
-    {...}
+begin
     x:= 5;
     y :=6;
     sum_n_times(x, y);
