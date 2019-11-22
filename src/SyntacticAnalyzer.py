@@ -38,12 +38,13 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_variable_declaration1()
         else:
+            self._previous_value()
             return None
 
     def _list_variable_declaration1(self):
         self._list_identifiers1()
         
-        if self._current_value['token'] == ':':
+        if self._next_value()['token'] == ':':
             self._next_value()
             self._type()
             
@@ -59,7 +60,7 @@ class SyntacticAnalyzer:
         if self._current_value['class'] == 'Identificador':
             self._list_identifiers1()
             
-            if self._current_value['token'] == ':':
+            if self._next_value()['token'] == ':':
                 self._next_value()
                 self._type()
                 
@@ -83,13 +84,13 @@ class SyntacticAnalyzer:
 
     def _list_identifiers2(self):
         if self._current_value['token'] == ',':
-            self._next_value()
-            if self._current_value['class'] == 'Identificador':
+            if self._next_value()['class'] == 'Identificador':
                 self._next_value()
                 self._list_identifiers2()
             else:
                 raise SyntacticException('identificador de variável faltando', self._current_value['line'])
         else:
+            self._previous_value()
             return None
 
     def _type(self):
@@ -147,15 +148,16 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_parameters1()
         
-            if self._current_value['token'] != ')':
+            if self._next_value()['token'] != ')':
                 raise SyntacticException('Argumento sem fechamento \')\'', self._current_value['line'])
         else:
+            self._previous_value()
             return None
 
     def _list_parameters1(self):
         self._list_identifiers1()
         
-        if self._current_value['token'] == ":":
+        if self._next_value()['token'] == ":":
             self._next_value()
             self._type()
 
@@ -169,7 +171,7 @@ class SyntacticAnalyzer:
             self._next_value()
             self._list_identifiers1()
 
-            if self._current_value['token'] == ":":
+            if self._next_value()['token'] == ":":
                 self._next_value()
                 self._type()
 
@@ -178,6 +180,7 @@ class SyntacticAnalyzer:
             else:
                raise SyntacticException('Faltando separador \':\'', self._current_value['line']) 
         else:
+            self._previous_value()
             return None
 
     def _compound_statement(self):
@@ -186,8 +189,8 @@ class SyntacticAnalyzer:
             if self._next_value()['token'] == 'end':
                 return None
             else:
+                
                 self._list_statement1()
-
                 if self._current_value['token'] != 'end':
                     raise SyntacticException('Comando composto não fechado com end', self._current_value['line'])
             
@@ -207,7 +210,10 @@ class SyntacticAnalyzer:
         self._next_value()
         self._list_statement2()
 
-    def _list_statement2(self):        
+    def _list_statement2(self):
+        print("chegou aqui\n")
+        print(self._current_value)
+        print(self._lexical_table[0]) 
         if self._current_value['token'] == ';':
             self._next_value()
             if self._current_value['token'] == 'end':
@@ -216,8 +222,15 @@ class SyntacticAnalyzer:
             
             self._next_value()
             self._list_statement2()
+        
+        elif self._current_value['token'] == 'end':
+            
+            self._next_value()
+            self._statement()
+
+
         else:
-            raise SyntacticException('Faltando separador \';\' entre comandos', self._current_value['line'])   
+            raise SyntacticException('Faltando fechamento de comandos', self._current_value['line'])   
 
     def _statement(self):
         if self._current_value['class'] == 'Identificador':         
@@ -230,14 +243,12 @@ class SyntacticAnalyzer:
                 self._activation_procedure()
         
         elif self._current_value['token'] == 'begin':
-            self._next_value()
             self._compound_statement()
         
         elif self._current_value['token'] == 'while':
-            
-
             self._next_value()
             self._expression()
+
             if self._next_value()['token'] == 'do':
                 self._next_value()
                 self._statement()
