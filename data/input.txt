@@ -20,7 +20,6 @@ procedure sum_n_times (number, n: integer);
         count :=1;
         while count <= n do
             begin
-
                 if (number <> 0) then 
                     begin
                         total := total + number;
@@ -39,6 +38,7 @@ procedure sum_n_times (number, n: integer);
 
         number := total;
     end
+;
 
 begin
     x:= 5;

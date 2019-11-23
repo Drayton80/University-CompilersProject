@@ -99,7 +99,7 @@ class LexicalAnalyzer:
 
     def create_table(self) -> list:
         with open(self._code_path, 'r') as file:
-            code = file.read()    
+            code = file.read() + '\n'
         
         table = []
         line_index = 1
@@ -115,7 +115,7 @@ class LexicalAnalyzer:
                 print(exception)
                 return []
             except IndexError:
-                pass
+                return table
             
             if classificacao == "Identificador":
                 if token in self._keywords:

@@ -173,8 +173,7 @@ class SyntacticAnalyzer:
             return None
 
     def _compound_statement(self, begin_already_checked=False):
-        self._print_current_and_neighbors()
-        if self._next_value()['token'] == 'begin' or begin_already_checked:
+        if begin_already_checked or self._next_value()['token'] == 'begin':
             # More legible representation for Optional Statements:
             if self._next_value()['token'] == 'end':
                 return None
@@ -197,13 +196,13 @@ class SyntacticAnalyzer:
             return None
 
     def _list_statement1(self):
-        self._print_current_and_neighbors()
         self._statement()
         self._list_statement2()
 
     def _list_statement2(self):
         if self._next_value()['token'] == ';':
             if self._next_value()['token'] == 'end':
+                self._previous_value()
                 return None
             else:
                 self._previous_value()
@@ -218,9 +217,11 @@ class SyntacticAnalyzer:
         
         if self._current_value['class'] == 'Identificador':         
             if self._next_value()['token'] == ':=':
+
                 self._expression()
             else:
-                self._activation_procedure()
+                self._previous_value()
+                self._activation_procedure(identifier_already_checked=True)
         
         elif self._current_value['token'] == 'begin':
             self._compound_statement(begin_already_checked=True)
@@ -256,8 +257,8 @@ class SyntacticAnalyzer:
         if self._next_value()['class'] != "Identificador":
             raise SyntacticException('Identificador esperado', self._current_value['line'])
 
-    def _activation_procedure(self):
-        if self._next_value()['class'] == "Identificador":
+    def _activation_procedure(self, identifier_already_checked=False):
+        if identifier_already_checked or self._next_value()['class'] == "Identificador":
             if self._next_value()['token'] == '(':
                 self._list_expression1()
                 
@@ -267,8 +268,6 @@ class SyntacticAnalyzer:
                 self._previous_value()
                 return None
         else:
-            #TODO - Ver com o draytim se isso n da melda
-            #Erro de que entrou no activation procedure e não tinha um identificador
             raise SyntacticException('Procedimento Vazio', self._current_value['line'])
 
     def _list_expression1(self):
@@ -353,24 +352,20 @@ class SyntacticAnalyzer:
                 return None
 
         elif self._current_value['token'] == '(':
-            self._previous_value()
-
             self._expression()
 
-            if self._current_value['token'] != ')':
+            if self._next_value()['token'] != ')':
                 raise SyntacticException('Fator faltando fechamento \')\'', self._current_value['line'])
 
         elif self._current_value['token'] == 'not':
-            self._previous_value()
-
             self._factor()
 
         else:
             raise SyntacticException('Fator vazio', self._current_value['line'])
 
     def program(self):
-        for value in self._lexical_table:
-            print(value)
+        # for value in self._lexical_table:
+        #     print(value)
         try:
             if self._lexical_table:
                 if self._next_value()['token'] == 'program':
