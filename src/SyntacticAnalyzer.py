@@ -200,7 +200,9 @@ class SyntacticAnalyzer:
         self._list_statement2()
 
     def _list_statement2(self):
-        if self._next_value()['token'] == ';':
+        self._next_value()
+        
+        if self._current_value['token'] == ';':
             if self._next_value()['token'] == 'end':
                 self._previous_value()
                 return None
@@ -209,6 +211,9 @@ class SyntacticAnalyzer:
                 self._statement()
                 self._list_statement2()
 
+        elif self._current_value['token'] == 'end':
+            self._previous_value()
+            return None
         else:
             raise SyntacticException('Faltando fechamento de comandos', self._current_value['line'])   
 

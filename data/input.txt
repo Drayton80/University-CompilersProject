@@ -24,19 +24,18 @@ procedure sum_n_times (number, n: integer);
                     begin
                         total := total + number;
                         number := number - 1;
-                        count :=count + 1;
-
+                        count :=count + 1
                     end
 
                 else {Caso number tenha sido zerado, vamos reiniciar ele.}
                     begin
-                       number:= aux;
+                       number:= aux
                     end
-                ;
+                
             end
         ;
 
-        number := total;
+        number := total
     end
 ;
 
