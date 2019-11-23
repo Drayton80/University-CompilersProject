@@ -1,10 +1,48 @@
-program teste; {programa exemplo}
-var
-    valor1: integer;
-    valor2: real;
+{Teste de Código}
+
+program{...Comentário;...}teste;
+
+{Main/;/;/}
+var x, y: integer;
+
+{Função que vai decrementando um número enquanto soma 
+ele "n" vezes; Caso o número chegue a 0, nós vamos resetar
+o número e continuar a decrementar e somar.}
+procedure sum_n_times (number, n: integer);
+    
+    var aux, count, total: integer;{Variável que vai guardar o total da soma}
+
+    begin {Passamos o valor do número para a auxiliar}
+        aux := number;
+        total:=0; {Salvamos o total, primeiro atribuindo 0 a ele}
+        
+        {Iniciamos um while que vai executar até o valor de "n" ser 0}
+        count :=1;
+        while count <= n do
+            begin
+                if (number <> 0) then 
+                    begin
+                        total := total + number;
+                        number := number - 1;
+                        count :=count + 1;
+
+                    end
+
+                else {Caso number tenha sido zerado, vamos reiniciar ele.}
+                    begin
+                       number:= aux;
+                    end
+                ;
+            end
+        ;
+
+        number := total;
+    end
+;
+
 begin
-    while valor1 < 10 do valor1 := valor1 + 1;
-    if valor2 = valor1 then valor2 := valor1 + 1 else valor2 := valor1;
-    valor1 := 10;
-    valor2 := 0.1;
+    x:= 5;
+    y :=6;
+    sum_n_times(x, y);
+    {writeln('Valor atual de x = ', x);}
 end.
