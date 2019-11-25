@@ -43,6 +43,8 @@ class LexicalAnalyzer:
     def state_identifier(self, code, line_index, character_index, token):
         if re.search(r'[a-zA-Z0-9_]', code[character_index]):
             return self.state_identifier(code, line_index, character_index + 1, token + code[character_index])
+        elif code[character_index] == '.':
+            return self.state_tridimensional1(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Identificador", character_index, line_index
 
@@ -59,7 +61,21 @@ class LexicalAnalyzer:
             return self.state_real(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Número real", character_index, line_index
+
+    def state_tridimensional1(self, code, line_index, character_index, token):
+        if re.search(r'[a-zA-Z0-9_]', code[character_index]):
+            return self.state_tridimensional1(code, line_index, character_index + 1, token + code[character_index])
+        elif code[character_index] == '.':
+            return self.state_tridimensional2(code, line_index, character_index + 1, token + code[character_index])
+        else:
+            return token, "Identificador-Delimitador-Identificador", character_index, line_index
     
+    def state_tridimensional2(self, code, line_index, character_index, token):
+        if re.search(r'[a-zA-Z0-9_]', code[character_index]):
+            return self.state_tridimensional2(code, line_index, character_index + 1, token + code[character_index])
+        else:
+            return token, "Identificador Tridimensional", character_index, line_index
+
     def state_delimeter1(self, code, line_index, character_index, token):
         return token, "Delimitador", character_index, line_index
     
@@ -126,6 +142,13 @@ class LexicalAnalyzer:
                     table.append({'token': token, 'class': "Multiplicativo", 'line': line_index})
                 else:
                     table.append({'token': token, 'class': classificacao, 'line': line_index})
+            elif classificacao == "Identificador-Delimitador-Identificador":
+                identifier1 = token.split('.')[0]
+                identifier2 = token.split('.')[1]
+
+                table.append({'token': identifier1, 'class': "Identificador", 'line': line_index})
+                table.append({'token': '.', 'class': "Delimitador", 'line': line_index})
+                table.append({'token': identifier2, 'class': "Identificador", 'line': line_index})
             elif classificacao != "":
                 table.append({'token': token, 'class': classificacao, 'line': line_index})
 
