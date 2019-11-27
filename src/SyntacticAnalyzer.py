@@ -39,7 +39,6 @@ class SyntacticAnalyzer:
         
             return self._current_value
 
-
     def _variables_declaration(self):
         if self._next_value()['token'] == 'var':
             self._list_variable_declaration1()
@@ -122,7 +121,52 @@ class SyntacticAnalyzer:
         else:
             self._previous_value()
             return None
+
+    def _list_function_declaration1(self):
+        if self._next_value()['token'] == 'function':
+            self._function_declaration()
+
+            if self._next_value()['token'] == ';':
+                self._list_function_declaration2()
+            else:
+                raise SyntacticException('; faltando', self._current_value['line'])
+        else:
+            self._previous_value()
+            return None
+
+    def _list_function_declaration2(self):
+        if self._next_value()['token'] == 'function':
+            self._function_declaration()
+
+            if self._next_value()['token'] == ';':
+                self._list_function_declaration2()
+            else:
+                raise SyntacticException('; faltando', self._current_value['line'])
+        else:
+            self._previous_value()
+            return None
     
+    def _function_declaration(self):
+        if self._next_value()['class'] == "Identificador":
+            self._argument()
+
+            if self._next_value()['token'] == ':':
+                self._type()
+            
+                if self._next_value()['token'] == ';':
+                    self._variables_declaration()
+                    self._list_function_declaration1()
+                    self._compound_statement()
+                else:
+                    raise SyntacticException('; faltando', self._current_value['line'])
+            
+            else:
+                raise SyntacticException('faltando tipo de retorno', self._current_value['line'])
+
+        else:
+            self._previous_value()
+            return None
+
     def _procedure_declaration(self):
         if self._next_value()['class'] == "Identificador":
             self._argument()
@@ -364,8 +408,8 @@ class SyntacticAnalyzer:
             raise SyntacticException('Fator vazio', self._current_value['line'])
 
     def program(self):
-        # for value in self._lexical_table:
-        #     print(value)
+        for value in self._lexical_table:
+            print(value)
         try:
             if self._lexical_table:
                 if self._next_value()['token'] == 'program':
@@ -374,6 +418,8 @@ class SyntacticAnalyzer:
                             self._variables_declaration()
                             
                             self._list_procedures_declaration1()
+
+                            self._list_function_declaration1()
                             
                             self._compound_statement()
 

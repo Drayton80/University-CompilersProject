@@ -5,15 +5,12 @@ program{...Comentário;...}teste;
 {Main/;/;/}
 var x, y: integer;
 
-{Função que vai decrementando um número enquanto soma 
-ele "n" vezes; Caso o número chegue a 0, nós vamos resetar
-o número e continuar a decrementar e somar.}
 procedure sum_n_times (number, n: integer);
-    
     var aux, count, total: integer;{Variável que vai guardar o total da soma}
 
     begin {Passamos o valor do número para a auxiliar}
         aux := number;
+        { aux := number.number.number; }
         total:=0; {Salvamos o total, primeiro atribuindo 0 a ele}
         
         {Iniciamos um while que vai executar até o valor de "n" ser 0}
@@ -31,14 +28,18 @@ procedure sum_n_times (number, n: integer);
                 else {Caso number tenha sido zerado, vamos reiniciar ele.}
                     begin
                        number:= aux;
-                    end
-                ;
-            end
-        ;
+                    end;
+            end;
 
         number := total;
-    end
-;
+    end;
+
+function fatorial(n: integer): integer;
+var
+    x: integer;
+begin
+    x := 1;
+end;
 
 begin
     x:= 5;

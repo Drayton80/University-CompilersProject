@@ -14,11 +14,12 @@ class LexicalAnalyzer:
         self._additives = ["or"]
         self._multiplicatives = ["and"]
     
-    def state_initial(self, code, line_index, character_index, token):
+    def state_initial(self, code, line_index, character_index, token, dimensionality_already_checked=False):
+        print(line_index, character_index, token)
         if code[character_index] == "\n":
             return token, "", character_index + 1, line_index + 1
         elif re.search(r'[a-zA-Z]', code[character_index]):
-            return self.state_identifier(code, line_index, character_index + 1, token + code[character_index])
+            return self.state_identifier(code, line_index, character_index + 1, token + code[character_index], dimensionality_already_checked=dimensionality_already_checked)
         elif re.search(r'[0-9]', code[character_index]):
             return self.state_integer(code, line_index, character_index + 1, token + code[character_index])
         elif re.search(r'[;.,()]', code[character_index]):
@@ -40,11 +41,32 @@ class LexicalAnalyzer:
         else:
             raise WrongSymbolException()
 
-    def state_identifier(self, code, line_index, character_index, token):
+    def state_identifier(self, code, line_index, character_index, token, dimensionality_already_checked=False):
         if re.search(r'[a-zA-Z0-9_]', code[character_index]):
-            return self.state_identifier(code, line_index, character_index + 1, token + code[character_index])
+            return self.state_identifier(code, line_index, character_index + 1, token + code[character_index], dimensionality_already_checked=dimensionality_already_checked)
+        elif not dimensionality_already_checked and code[character_index] == '.':
+            return self.state_bidimensional(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Identificador", character_index, line_index
+
+    def state_bidimensional(self, code, line_index, character_index, token, first_character_checked=False):
+        if re.search(r'[a-zA-Z0-9_]', code[character_index]):
+            return self.state_bidimensional(code, line_index, character_index + 1, token + code[character_index], first_character_checked=True)
+        elif not first_character_checked:
+            return self.state_initial(code, line_index, character_index - len(token), '', dimensionality_already_checked=True)
+        elif code[character_index] == '.':
+            return self.state_tridimensional(code, line_index, character_index + 1, token + code[character_index])
+        else:
+            return self.state_initial(code, line_index, character_index - len(token), '', dimensionality_already_checked=True)
+            #return token, "Identificador Bidimensional", character_index, line_index
+    
+    def state_tridimensional(self, code, line_index, character_index, token, first_character_checked=False):
+        if re.search(r'[a-zA-Z0-9_]', code[character_index]):
+            return self.state_tridimensional(code, line_index, character_index + 1, token + code[character_index], first_character_checked=True)
+        elif not first_character_checked:
+            return self.state_initial(code, line_index, character_index - len(token), '', dimensionality_already_checked=True)
+        else:
+            return token, "Identificador Tridimensional", character_index, line_index
 
     def state_integer(self, code, line_index, character_index, token):
         if re.search(r'[0-9]', code[character_index]):
@@ -59,7 +81,7 @@ class LexicalAnalyzer:
             return self.state_real(code, line_index, character_index + 1, token + code[character_index])
         else:
             return token, "Número real", character_index, line_index
-    
+
     def state_delimeter1(self, code, line_index, character_index, token):
         return token, "Delimitador", character_index, line_index
     
@@ -126,13 +148,14 @@ class LexicalAnalyzer:
                     table.append({'token': token, 'class': "Multiplicativo", 'line': line_index})
                 else:
                     table.append({'token': token, 'class': classificacao, 'line': line_index})
+            
             elif classificacao != "":
                 table.append({'token': token, 'class': classificacao, 'line': line_index})
 
         return table
         
         
-# table = LexicalAnalyzer('../data/input.txt').create_table()
+table = LexicalAnalyzer('../data/input.txt').create_table()
 
-# for element in table:
-#     print(element)
+for element in table:
+    print(element)
