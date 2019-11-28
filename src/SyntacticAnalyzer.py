@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 
 from src.LexicalAnalyzer import LexicalAnalyzer
 from src.SyntacticException import SyntacticException
+from src.SymbolTable import SymbolTable
 
 
 class SyntacticAnalyzer:
@@ -13,6 +14,7 @@ class SyntacticAnalyzer:
         self._lexical_table = LexicalAnalyzer(code_path).create_table()
         self._current_value = None
         self._old_value = None
+        self._symbol_table = SymbolTable()
     
     def _print_current_and_neighbors(self):
         print('')
