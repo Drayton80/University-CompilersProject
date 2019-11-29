@@ -1,4 +1,3 @@
-import re
 import os
 import sys
 
@@ -18,28 +17,39 @@ class SymbolTable:
     def __init__(self):
         self._stack = []
 
+    def print_stack(self):
+        print('\n NOVO ESTADO')
+        for identifier in self._stack:
+            print(identifier._token, sep='')
+
     def block_entrance(self):
         self._stack.insert(0, IdentifierInformation('$', None))
+        self.print_stack()
 
     def identifier_declaration(self, identifier_declared: IdentifierInformation):
-        for identifier in self._stack:
+        aux_stack = self._stack.copy()
+        
+        for identifier in aux_stack:
             if identifier._token == '$':
-                self._stack.insert(0, identifier)
+                self._stack.insert(0, identifier_declared)
+                self.print_stack()
+                break
             elif identifier_declared._token == identifier._token:
+                print(identifier_declared._token, identifier._token)
                 raise IdentifierDeclarationException(identifier_declared._token)
 
-    def identifier_usage(self, identifier_used: IdentifierInformation):
+    def identifier_usage(self, token: str):
         for identifier in self._stack:
-            if identifier_used._token == identifier._token:
+            if token == identifier._token:
                 return identifier
-        
-        raise UsingNotDeclaredException(identifier_used._token)
+        raise UsingNotDeclaredException(token)
 
     def block_exit(self):
+        print('limpou')
         for identifier in self._stack:
             if identifier._token == '$':
                 self._stack.pop(0)
+                self.print_stack()
                 break
             else:
                 self._stack.pop(0)
-            

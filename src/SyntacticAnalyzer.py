@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 
 from src.LexicalAnalyzer import LexicalAnalyzer
 from src.SyntacticException import SyntacticException
-from src.SymbolTable import SymbolTable
+from src.SymbolTable import SymbolTable, IdentifierInformation
 
 
 class SyntacticAnalyzer:
@@ -63,7 +63,7 @@ class SyntacticAnalyzer:
 
     def _list_variable_declaration2(self):
         if self._next_value()['class'] == 'Identificador':
-            self._list_identifiers1()
+            self._list_identifiers1(identifier_already_checked=True)
             
             if self._next_value()['token'] == ':':
                 self._type()
@@ -78,8 +78,9 @@ class SyntacticAnalyzer:
             self._previous_value()
             return None
 
-    def _list_identifiers1(self):
-        if self._next_value()['class'] == 'Identificador':
+    def _list_identifiers1(self, identifier_already_checked=False):
+        if identifier_already_checked or self._next_value()['class'] == 'Identificador':
+            self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
             self._list_identifiers2()
         else:
             raise SyntacticException('identificador de variável faltando', self._current_value['line'])
@@ -87,6 +88,7 @@ class SyntacticAnalyzer:
     def _list_identifiers2(self):
         if self._next_value()['token'] == ',':
             if self._next_value()['class'] == 'Identificador':
+                self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
                 self._list_identifiers2()
             else:
                 raise SyntacticException('identificador de variável faltando', self._current_value['line'])
@@ -150,6 +152,7 @@ class SyntacticAnalyzer:
     
     def _function_declaration(self):
         if self._next_value()['class'] == "Identificador":
+            self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
             self._argument()
 
             if self._next_value()['token'] == ':':
@@ -159,6 +162,7 @@ class SyntacticAnalyzer:
                     self._variables_declaration()
                     self._list_function_declaration1()
                     self._compound_statement()
+                    self._symbol_table.block_exit()
                 else:
                     raise SyntacticException('; faltando', self._current_value['line'])
             
@@ -171,12 +175,14 @@ class SyntacticAnalyzer:
 
     def _procedure_declaration(self):
         if self._next_value()['class'] == "Identificador":
+            self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
             self._argument()
             
             if self._next_value()['token'] == ';':
                 self._variables_declaration()
                 self._list_procedures_declaration1()
                 self._compound_statement()
+                self._symbol_table.block_exit()
             else:
                 raise SyntacticException('; faltando', self._current_value['line'])
 
@@ -185,6 +191,8 @@ class SyntacticAnalyzer:
             return None
 
     def _argument(self):
+        self._symbol_table.block_entrance()
+
         if self._next_value()['token'] == '(':
             self._list_parameters1()
         
@@ -261,7 +269,9 @@ class SyntacticAnalyzer:
     def _statement(self):
         self._next_value()
         
-        if self._current_value['class'] == 'Identificador':         
+        if self._current_value['class'] == 'Identificador':
+            self._symbol_table.identifier_usage(self._current_value['token'])         
+            
             if self._next_value()['token'] == ':=':
 
                 self._expression()
@@ -305,6 +315,8 @@ class SyntacticAnalyzer:
 
     def _activation_procedure(self, identifier_already_checked=False):
         if identifier_already_checked or self._next_value()['class'] == "Identificador":
+            self._symbol_table.identifier_usage(self._current_value['token'])     
+
             if self._next_value()['token'] == '(':
                 self._list_expression1()
                 
@@ -387,7 +399,9 @@ class SyntacticAnalyzer:
         elif self._current_value['token'] in ['true', 'false']:
             return None
 
-        elif self._current_value['class'] == "Identificador":            
+        elif self._current_value['class'] == "Identificador": 
+            self._symbol_table.identifier_usage(self._current_value['token'])
+
             if self._next_value()['token'] == '(':
                 self._list_expression1()
 
@@ -416,14 +430,14 @@ class SyntacticAnalyzer:
             if self._lexical_table:
                 if self._next_value()['token'] == 'program':
                     if self._next_value()['class'] == 'Identificador':
+                        self._symbol_table.block_entrance()
+
                         if self._next_value()['token'] == ';':
                             self._variables_declaration()
-                            
                             self._list_procedures_declaration1()
-
                             self._list_function_declaration1()
-                            
                             self._compound_statement()
+                            self._symbol_table.block_exit()
 
                             if self._next_value()['token'] != '.':
                                 raise SyntacticException('. final faltando', self._current_value['line'])

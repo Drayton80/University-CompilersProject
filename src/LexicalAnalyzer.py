@@ -15,7 +15,6 @@ class LexicalAnalyzer:
         self._multiplicatives = ["and"]
     
     def state_initial(self, code, line_index, character_index, token, dimensionality_already_checked=False):
-        print(line_index, character_index, token)
         if code[character_index] == "\n":
             return token, "", character_index + 1, line_index + 1
         elif re.search(r'[a-zA-Z]', code[character_index]):
@@ -155,7 +154,7 @@ class LexicalAnalyzer:
         return table
         
         
-table = LexicalAnalyzer('../data/input.txt').create_table()
+# table = LexicalAnalyzer('../data/input.txt').create_table()
 
-for element in table:
-    print(element)
+# for element in table:
+#     print(element)

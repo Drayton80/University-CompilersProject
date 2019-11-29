@@ -21,7 +21,7 @@ procedure sum_n_times (number, n: integer);
                     begin
                         total := total + number;
                         number := number - 1;
-                        count :=count + 1;
+                        count := count + 1;
 
                     end
 
