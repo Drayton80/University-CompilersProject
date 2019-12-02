@@ -49,10 +49,11 @@ class SyntacticAnalyzer:
             return None
 
     def _list_variable_declaration1(self):
-        self._list_identifiers1()
+        variables_tokens = self._list_identifiers1()
         
         if self._next_value()['token'] == ':':
-            self._type()
+            variables_type = self._type()
+            self._symbol_table.identifier_type_redefinition(variables_tokens, variables_type)
             
             if self._next_value()['token'] == ';':   
                 self._list_variable_declaration2()
@@ -63,10 +64,11 @@ class SyntacticAnalyzer:
 
     def _list_variable_declaration2(self):
         if self._next_value()['class'] == 'Identificador':
-            self._list_identifiers1(identifier_already_checked=True)
+            variables_tokens = self._list_identifiers1(identifier_already_checked=True)
             
             if self._next_value()['token'] == ':':
-                self._type()
+                variables_type = self._type()
+                self._symbol_table.identifier_type_redefinition(variables_tokens, variables_type)
                 
                 if self._next_value()['token'] == ';':
                     self._list_variable_declaration2()
@@ -80,25 +82,25 @@ class SyntacticAnalyzer:
 
     def _list_identifiers1(self, identifier_already_checked=False):
         if identifier_already_checked or self._next_value()['class'] == 'Identificador':
-            self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
-            self._list_identifiers2()
+            self._symbol_table.identifier_declaration(self._current_value['token'], self._current_value['class'])
+            return self._list_identifiers2(list_identifiers=[self._current_value['token']])
         else:
             raise SyntacticException('identificador de variável faltando', self._current_value['line'])
 
-    def _list_identifiers2(self):
+    def _list_identifiers2(self, list_identifiers):
         if self._next_value()['token'] == ',':
             if self._next_value()['class'] == 'Identificador':
-                self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
-                self._list_identifiers2()
+                self._symbol_table.identifier_declaration(self._current_value['token'], self._current_value['class'])
+                self._list_identifiers2(list_identifiers.append(self._current_value['token']))
             else:
                 raise SyntacticException('identificador de variável faltando', self._current_value['line'])
         else:
             self._previous_value()
-            return None
+            return list_identifiers
 
     def _type(self):
         if self._next_value()['token'] in ['integer', 'real', 'boolean', 'char', 'string']:
-            return None
+            return self._current_value['token']
         else:
             raise SyntacticException('tipo da variável não especificado', self._current_value['line'])
 
@@ -152,11 +154,13 @@ class SyntacticAnalyzer:
     
     def _function_declaration(self):
         if self._next_value()['class'] == "Identificador":
-            self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
+            function_token = self._current_value['token']
+            self._symbol_table.identifier_declaration(function_token, None)
             self._argument()
 
             if self._next_value()['token'] == ':':
-                self._type()
+                function_return_type = self._type()
+                self._symbol_table.identifier_type_redefinition(function_token, function_return_type)
             
                 if self._next_value()['token'] == ';':
                     self._variables_declaration()
@@ -175,7 +179,7 @@ class SyntacticAnalyzer:
 
     def _procedure_declaration(self):
         if self._next_value()['class'] == "Identificador":
-            self._symbol_table.identifier_declaration(IdentifierInformation(self._current_value['token'], self._current_value['class']))
+            self._symbol_table.identifier_declaration(self._current_value['token'], 'procedure')
             self._argument()
             
             if self._next_value()['token'] == ';':

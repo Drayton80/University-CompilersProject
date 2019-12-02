@@ -24,13 +24,25 @@ class SymbolTable:
     def block_entrance(self):
         self._stack.insert(0, IdentifierInformation('$', None))
 
-    def identifier_declaration(self, identifier_declared: IdentifierInformation):       
+    def identifier_declaration(self, identifier_token: str, identifier_type: str):       
         for identifier in self._stack.copy():
             if identifier._token == '$':
-                self._stack.insert(0, identifier_declared)
+                self._stack.insert(0, IdentifierInformation(identifier_token, identifier_type))
                 break
-            elif identifier_declared._token == identifier._token:
-                raise IdentifierDeclarationException(identifier_declared._token)
+            elif identifier_token == identifier._token:
+                raise IdentifierDeclarationException(identifier_token)
+    
+    def identifier_type_redefinition(self, search_tokens: list, new_identifier_type: str):
+        if not isinstance(search_tokens, list):
+            search_tokens = [search_tokens]
+        
+        stack_index = 0
+        
+        for identifier in self._stack:
+            if search_token == identifier['token']:
+                self._stack[stack_index]._type = new_identifier_type
+            
+            stack_index += 1
 
     def identifier_usage(self, token: str):
         for identifier in self._stack:
