@@ -19,7 +19,7 @@ class SymbolTable:
 
     def print_stack(self):
         for identifier in self._stack:
-            print(identifier._token, sep='')
+            print(identifier._token, ' - ' , identifier._type, sep='')
 
     def block_entrance(self):
         self._stack.insert(0, IdentifierInformation('$', None))
@@ -39,7 +39,7 @@ class SymbolTable:
         stack_index = 0
         
         for identifier in self._stack:
-            if search_token == identifier['token']:
+            if identifier._token in search_tokens:
                 self._stack[stack_index]._type = new_identifier_type
             
             stack_index += 1
@@ -51,6 +51,7 @@ class SymbolTable:
         raise UsingNotDeclaredException(token)
 
     def block_exit(self):
+        self.print_stack()
         for identifier in self._stack.copy():
             if identifier._token == '$':
                 self._stack.pop(0)

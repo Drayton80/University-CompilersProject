@@ -82,16 +82,17 @@ class SyntacticAnalyzer:
 
     def _list_identifiers1(self, identifier_already_checked=False):
         if identifier_already_checked or self._next_value()['class'] == 'Identificador':
-            self._symbol_table.identifier_declaration(self._current_value['token'], self._current_value['class'])
+            self._symbol_table.identifier_declaration(self._current_value['token'], None)
             return self._list_identifiers2(list_identifiers=[self._current_value['token']])
         else:
             raise SyntacticException('identificador de variável faltando', self._current_value['line'])
 
-    def _list_identifiers2(self, list_identifiers):
+    def _list_identifiers2(self, list_identifiers=[]):
         if self._next_value()['token'] == ',':
             if self._next_value()['class'] == 'Identificador':
-                self._symbol_table.identifier_declaration(self._current_value['token'], self._current_value['class'])
-                self._list_identifiers2(list_identifiers.append(self._current_value['token']))
+                self._symbol_table.identifier_declaration(self._current_value['token'], None)
+                list_identifiers.append(self._current_value['token'])
+                self._list_identifiers2(list_identifiers=list_identifiers)
             else:
                 raise SyntacticException('identificador de variável faltando', self._current_value['line'])
         else:
