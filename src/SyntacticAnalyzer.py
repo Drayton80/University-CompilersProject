@@ -410,7 +410,7 @@ class SyntacticAnalyzer:
             return None
 
         elif self._current_value['class'] == "Identificador": 
-            self._type_control.value_usage(self._symbol_table.identifier_usage(self._current_value['token']))
+            self._type_control.value_usage(self._symbol_table.identifier_usage(self._current_value['token'])._type)
 
             if self._next_value()['token'] == '(':
                 self._list_expression1()
