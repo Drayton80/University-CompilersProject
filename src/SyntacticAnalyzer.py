@@ -7,6 +7,12 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 from src.LexicalAnalyzer import LexicalAnalyzer
 from src.SyntacticException import SyntacticException
 from src.SymbolTable import SymbolTable, IdentifierInformation
+from src.TypeControlStack import TypeControlStack
+
+from src.TypeMismatchException import TypeMismatchException
+from src.AttribuitionMismatchException import AttribuitionMismatchException
+from src.IdentifierDeclarationException import IdentifierDeclarationException
+from src.UsingNotDeclaredException import UsingNotDeclaredException
 
 
 class SyntacticAnalyzer:
@@ -15,6 +21,7 @@ class SyntacticAnalyzer:
         self._current_value = None
         self._old_value = None
         self._symbol_table = SymbolTable()
+        self._type_control_stack = TypeControlStack()
     
     def _print_current_and_neighbors(self):
         print('')
@@ -274,11 +281,11 @@ class SyntacticAnalyzer:
         self._next_value()
         
         if self._current_value['class'] == 'Identificador':
-            self._symbol_table.identifier_usage(self._current_value['token'])         
+            identifier_information = self._symbol_table.identifier_usage(self._current_value['token'])         
             
             if self._next_value()['token'] == ':=':
-
                 self._expression()
+                self._type_control_stack.check_atribuition(identifier_information.get_type())
             else:
                 self._previous_value()
                 self._activation_procedure(identifier_already_checked=True)
@@ -349,6 +356,7 @@ class SyntacticAnalyzer:
 
         if self._next_value()['class'] == "Relacional":
             self._expression()
+            self._type_control_stack.check_relational()
 
         else:
             self._previous_value()
@@ -358,18 +366,24 @@ class SyntacticAnalyzer:
         #sinal já no if
         if self._next_value()['token'] in ['+', '-']:
             self._term1()
+            self._type_control_stack.check_arithmetical()
         else:
             self._previous_value()
             self._term1()
-
+        
         self._simple_expression2()
 
     def _simple_expression2(self):
         #Op aditiva já no if
         if self._next_value()['class'] == "Aditivo":
+            operator_token = self._current_value['token']
             self._term1()
             self._simple_expression2()
-
+            
+            if operator_token == 'or':
+                self._type_control_stack.check_logical()
+            elif operator_token == '+':
+                self._type_control_stack.check_arithmetical()
         else:
             #Vamos retornar a ultima posição, pois não há uma continuação
             self._previous_value()
@@ -382,29 +396,38 @@ class SyntacticAnalyzer:
     def _term2(self):
         #op_multiplicativo
         if self._next_value()['class'] == 'Multiplicativo':
+            operator_token = self._current_value['token']
             self._factor()
             self._term2()
 
+            if operator_token == 'and':
+                self._type_control_stack.check_logical()
+            elif operator_token == '*':
+                self._type_control_stack.check_arithmetical()
         else:
-            #TODO - Não sei se precisa
-            #Vamos retornar a ultima posição, pois não há uma continuação
             self._previous_value()
             return None
 
     def _factor(self):
         self._next_value()
+        # self._type_control_stack._print_stack()
+        # print(self._current_value['token'], '\n')
         
         if self._current_value['class'] == "Número inteiro":
+            self._type_control_stack.push('integer')
             return None
         
         elif self._current_value['class'] == "Número real":
+            self._type_control_stack.push('real')
             return None
         
         elif self._current_value['token'] in ['true', 'false']:
+            self._type_control_stack.push('boolean')
             return None
 
         elif self._current_value['class'] == "Identificador": 
-            self._symbol_table.identifier_usage(self._current_value['token'])
+            identifier_information = self._symbol_table.identifier_usage(self._current_value['token'])
+            self._type_control_stack.push(identifier_information.get_type())
 
             if self._next_value()['token'] == '(':
                 self._list_expression1()
@@ -451,9 +474,16 @@ class SyntacticAnalyzer:
                         raise SyntacticException('identificador esperado após program', self._current_value['line'])  
                 else:
                     raise SyntacticException('faltando program no começo', self._current_value['line'])
-        
         except SyntacticException as exception:
             print(exception)
+        except TypeMismatchException as exception:
+            print('Linha ' + str(self._current_value['line']) + ': ' + str(exception))
+        except AttribuitionMismatchException as exception:
+            print('Linha ' + str(self._current_value['line']) + ': ' + str(exception))
+        except IdentifierDeclarationException as exception:
+            print('Linha ' + str(self._current_value['line']) + ': ' + str(exception))
+        except UsingNotDeclaredException as exception:
+            print('Linha ' + str(self._current_value['line']) + ': ' + str(exception))
                     
 
 SyntacticAnalyzer('../data/input.txt').program()
