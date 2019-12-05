@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 from src.LexicalAnalyzer import LexicalAnalyzer
 from src.SyntacticException import SyntacticException
 from src.SymbolTable import SymbolTable, IdentifierInformation
-
+from src.TypeControl import TypeControl
 
 class SyntacticAnalyzer:
     def __init__(self, code_path: str):
@@ -15,6 +15,7 @@ class SyntacticAnalyzer:
         self._current_value = None
         self._old_value = None
         self._symbol_table = SymbolTable()
+        self._type_control = TypeControl()
     
     def _print_current_and_neighbors(self):
         print('')
@@ -368,6 +369,7 @@ class SyntacticAnalyzer:
         #Op aditiva já no if
         if self._next_value()['class'] == "Aditivo":
             self._term1()
+            self._type_control.arithmetic_expression()
             self._simple_expression2()
 
         else:
@@ -383,6 +385,7 @@ class SyntacticAnalyzer:
         #op_multiplicativo
         if self._next_value()['class'] == 'Multiplicativo':
             self._factor()
+            self._type_control.arithmetic_expression()
             self._term2()
 
         else:
@@ -395,19 +398,19 @@ class SyntacticAnalyzer:
         self._next_value()
         
         if self._current_value['class'] == "Número inteiro":
-            self._symbol_table.value_usage(self._current_value['token'], self._current_value['class'])
+            self._type_control.value_usage(self._current_value['class'])
             return None
         
         elif self._current_value['class'] == "Número real":
-            self._symbol_table.value_usage(self._current_value['token'], self._current_value['class'])
+            self._type_control.value_usage(self._current_value['class'])
             return None
         
         elif self._current_value['token'] in ['true', 'false']:
-            self._symbol_table.value_usage(self._current_value['token'], self._current_value['class'])
+            self._type_control.value_usage(self._current_value['class'])
             return None
 
         elif self._current_value['class'] == "Identificador": 
-            self._symbol_table.identifier_usage(self._current_value['token'])
+            self._type_control.value_usage(self._symbol_table.identifier_usage(self._current_value['token']))
 
             if self._next_value()['token'] == '(':
                 self._list_expression1()
