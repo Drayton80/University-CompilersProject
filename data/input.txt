@@ -6,8 +6,9 @@ program{...Comentário;...}teste;
 var x, y: integer;
 
 procedure sum_n_times (number, n: integer);
-    var aux, count, total: integer;{Variável que vai guardar o total da soma}
-
+    var 
+        aux: integer;{Variável que vai guardar o total da soma}
+        count, total: integer;
     begin {Passamos o valor do número para a auxiliar}
         aux := number;
         { aux := number.number.number; }
