@@ -12,10 +12,10 @@ class IdentifierInformation:
         self._token = identifier_token
         self._type = new_identifier_type
 
-
 class SymbolTable:
     def __init__(self):
         self._stack = []
+        self._stackTypeControl = []
 
     def print_stack(self):
         for identifier in self._stack:
@@ -54,8 +54,13 @@ class SymbolTable:
     def identifier_usage(self, token: str):
         for stack_identifier in self._stack:
             if token == stack_identifier._token:
+                self._stackTypeControl.insert(0, stack_identifier)
                 return stack_identifier
         raise UsingNotDeclaredException(token)
+
+    def value_usage(self, token, value_class):
+        #TODO - Estou usando a classe de identificadores para guardar o valor e o tipo daquele valor
+        self._stackTypeControl.insert(0, IdentifierInformation(token, value_class))
 
     def block_exit(self):
         #self.print_stack()

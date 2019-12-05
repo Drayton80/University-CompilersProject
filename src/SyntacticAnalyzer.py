@@ -395,12 +395,15 @@ class SyntacticAnalyzer:
         self._next_value()
         
         if self._current_value['class'] == "Número inteiro":
+            self._symbol_table.value_usage(self._current_value['token'], self._current_value['class'])
             return None
         
         elif self._current_value['class'] == "Número real":
+            self._symbol_table.value_usage(self._current_value['token'], self._current_value['class'])
             return None
         
         elif self._current_value['token'] in ['true', 'false']:
+            self._symbol_table.value_usage(self._current_value['token'], self._current_value['class'])
             return None
 
         elif self._current_value['class'] == "Identificador": 
