@@ -1,0 +1,12 @@
+
+program teste2;
+
+var 
+    x, y: integer;
+    z : boolean;
+
+begin
+    x := 5;
+    y := 2;
+    z := x > 6 <> true;
+end.

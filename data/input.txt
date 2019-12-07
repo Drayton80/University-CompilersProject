@@ -5,6 +5,7 @@ program{...Comentário;...}teste;
 {Main/;/;/}
 var x, y: integer;
 
+
 procedure sum_n_times (number, n: integer);
     var 
         aux: integer;{Variável que vai guardar o total da soma}
@@ -20,7 +21,7 @@ procedure sum_n_times (number, n: integer);
             begin
                 if (number <> 0) then 
                     begin
-                        total := total + number;
+                        total := total + number - 5;
                         number := number - 1;
                         count := count + 1;
 
@@ -38,8 +39,10 @@ procedure sum_n_times (number, n: integer);
 function fatorial(n: integer): integer;
 var
     x: integer;
+    y: boolean;
 begin
     x := 1;
+    y := x > 0 or x > 2 + 1;
 end;
 
 begin

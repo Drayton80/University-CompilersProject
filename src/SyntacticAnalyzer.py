@@ -6,12 +6,15 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 
 from src.LexicalAnalyzer import LexicalAnalyzer
 from src.SyntacticException import SyntacticException
+from src.TypeMismatchException import TypeMismatchException
 from src.SymbolTable import SymbolTable, IdentifierInformation
 from src.TypeControl import TypeControl
 
 class SyntacticAnalyzer:
     def __init__(self, code_path: str):
         self._lexical_table = LexicalAnalyzer(code_path).create_table()
+        for element in self._lexical_table:
+            print(element)
         self._current_value = None
         self._old_value = None
         self._symbol_table = SymbolTable()
@@ -275,11 +278,13 @@ class SyntacticAnalyzer:
         self._next_value()
         
         if self._current_value['class'] == 'Identificador':
-            self._symbol_table.identifier_usage(self._current_value['token'])         
-            
+            identifierAux = self._symbol_table.identifier_usage(self._current_value['token'])         
+            self._type_control.value_usage(identifierAux._token, identifierAux._type)
             if self._next_value()['token'] == ':=':
 
                 self._expression()
+                self._type_control.assignment_expression()
+                    
             else:
                 self._previous_value()
                 self._activation_procedure(identifier_already_checked=True)
@@ -349,8 +354,16 @@ class SyntacticAnalyzer:
         self._simple_expression1()
 
         if self._next_value()['class'] == "Relacional":
+            # Relacional EA1
+            print("Chegou aqui")
+            print(self._current_value)
+            self._type_control.relacional_expression()
             self._expression()
 
+            print("Chegou aqui2")
+            print(self._current_value)
+            # Relacional EA2
+            self._type_control.relacional_expression()
         else:
             self._previous_value()
             return None
@@ -396,21 +409,21 @@ class SyntacticAnalyzer:
 
     def _factor(self):
         self._next_value()
-        
         if self._current_value['class'] == "Número inteiro":
-            self._type_control.value_usage(self._current_value['class'])
+            self._type_control.value_usage(self._current_value['token'], 'integer')
             return None
-        
+
         elif self._current_value['class'] == "Número real":
-            self._type_control.value_usage(self._current_value['class'])
+            self._type_control.value_usage(self._current_value['token'], 'real')
             return None
-        
+
         elif self._current_value['token'] in ['true', 'false']:
-            self._type_control.value_usage(self._current_value['class'])
+            self._type_control.value_usage(self._current_value['token'], 'boolean')
             return None
 
         elif self._current_value['class'] == "Identificador": 
-            self._type_control.value_usage(self._symbol_table.identifier_usage(self._current_value['token'])._type)
+            identifierAux = self._symbol_table.identifier_usage(self._current_value['token'])
+            self._type_control.value_usage(identifierAux._token, identifierAux._type)
 
             if self._next_value()['token'] == '(':
                 self._list_expression1()
@@ -460,6 +473,8 @@ class SyntacticAnalyzer:
         
         except SyntacticException as exception:
             print(exception)
+        except TypeMismatchException as ex:
+            print(ex)
                     
 
-SyntacticAnalyzer('../data/input.txt').program()
+SyntacticAnalyzer('../data/input2.txt').program()
