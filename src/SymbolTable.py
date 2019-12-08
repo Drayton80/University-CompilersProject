@@ -12,6 +12,8 @@ class IdentifierInformation:
         self._token = identifier_token
         self._type = new_identifier_type
 
+    def get_type(self):
+        return self._type
 
 class SymbolTable:
     def __init__(self):

@@ -3,7 +3,12 @@
 program{...Comentário;...}teste;
 
 {Main/;/;/}
-var x, y: integer;
+var 
+    x, y: integer;
+    int1: integer;
+    char1: char;
+    bool1: boolean;
+    real1: real;
 
 procedure sum_n_times (number, n: integer);
     var 
@@ -43,8 +48,10 @@ begin
 end;
 
 begin
-    x:= 5;
-    y :=6;
+    real1 := 2;
+    bool1 := true and ((33 <> int1) or (50 < 20)) and ((1 + 2) = 3);
+    x:= 5 + int1;
+    y := 6;
     sum_n_times(x, y);
     {writeln('Valor atual de x = ', x);}
 end.
