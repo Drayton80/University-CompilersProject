@@ -21,6 +21,7 @@ class SyntacticAnalyzer:
         self._old_value = None
         self._symbol_table = SymbolTable()
         self._type_control = TypeControl()
+        self._procedure_params = {}
     
     def _print_current_and_neighbors(self):
         print('')
@@ -102,9 +103,15 @@ class SyntacticAnalyzer:
             self._previous_value()
             return list_identifiers
 
-    def _type(self, identifiers_tokens=None, ignore_end_block_symbol=False):
+    def _type(self, identifiers_tokens=None, ignore_end_block_symbol=False, procedure_identifier = ""):
+        print('Type Procedure:', procedure_identifier)
         if self._next_value()['token'] in ['integer', 'real', 'boolean', 'char', 'string']:
             self._symbol_table.identifier_declaration_type(identifiers_tokens, self._current_value['token'], ignore_end_block_symbol)
+            if procedure_identifier != '':
+                print("Entrou no procedure identifier")
+                self._procedure_params[procedure_identifier] = []
+                for i in range(len(identifiers_tokens)):
+                    self._procedure_params[procedure_identifier].append(self._current_value['token'])
             return None
         else:
             raise SyntacticException('tipo da variável não especificado', self._current_value['line'])
@@ -186,7 +193,7 @@ class SyntacticAnalyzer:
         if self._next_value()['class'] == "Identificador":
             self._symbol_table.identifier_declaration_token(self._current_value['token'])
             self._symbol_table.identifier_declaration_type(self._current_value['token'], 'procedure')
-            self._argument()
+            self._argument(self._current_value['token'])
             
             if self._next_value()['token'] == ';':
                 self._variables_declaration()
@@ -200,11 +207,12 @@ class SyntacticAnalyzer:
             self._previous_value()
             return None
 
-    def _argument(self):
+    def _argument(self, procedure_identifier = ""):
+        print('Argument Procedure:', procedure_identifier)
         self._symbol_table.block_entrance()
 
         if self._next_value()['token'] == '(':
-            self._list_parameters1()
+            self._list_parameters1(procedure_identifier)
         
             if self._next_value()['token'] != ')':
                 raise SyntacticException('Argumento sem fechamento \')\'', self._current_value['line'])
@@ -212,23 +220,23 @@ class SyntacticAnalyzer:
             self._previous_value()
             return None
 
-    def _list_parameters1(self):
+    def _list_parameters1(self, procedure_identifier = ""):
         identifiers_tokens = self._list_identifiers1()
-        
         if self._next_value()['token'] == ":":
-            self._type(identifiers_tokens)
-            self._list_parameters2()
+            print('list Procedure:', procedure_identifier)
+            self._type(identifiers_tokens, procedure_identifier = procedure_identifier)
+            self._list_parameters2(procedure_identifier)
 
         else:
             raise SyntacticException('Faltando separador \':\'', self._current_value['line'])
 
-    def _list_parameters2(self):
+    def _list_parameters2(self, procedure_identifier = ""):
         if self._next_value()['token'] == ";":
             identifiers_tokens = self._list_identifiers1()
 
             if self._next_value()['token'] == ":":
-                self._type(identifiers_tokens)
-                self._list_parameters2()
+                self._type(identifiers_tokens, procedure_identifier)
+                self._list_parameters2(procedure_identifier)
 
             else:
                raise SyntacticException('Faltando separador \':\'', self._current_value['line']) 
@@ -493,4 +501,6 @@ class SyntacticAnalyzer:
             print(exception)
                     
 
-SyntacticAnalyzer('../data/input2.txt').program()
+analizador = SyntacticAnalyzer('../data/input.txt')
+analizador.program()
+print(analizador._procedure_params)
