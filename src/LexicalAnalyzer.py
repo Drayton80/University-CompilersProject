@@ -11,7 +11,8 @@ class LexicalAnalyzer:
     def __init__(self, code_path: str):
         self._code_path = code_path
         self._keywords = ["program", "var", "integer", "real", "boolean", "procedure", "begin", "end", "if", "then", "else", "while", "do", "not"]
-        self._relational = ['and', 'or']
+        self._additives = ["or"]
+        self._multiplicatives = ["and"]
     
     def state_initial(self, code, line_index, character_index, token, dimensionality_already_checked=False):
         if code[character_index] == "\n":
@@ -140,8 +141,10 @@ class LexicalAnalyzer:
             if classificacao == "Identificador":
                 if token in self._keywords:
                     table.append({'token': token, 'class': "Palavra reservada", 'line': line_index})
-                elif token in self._relational:
-                    table.append({'token': token, 'class': "Relacional", 'line': line_index})
+                elif token in self._additives:
+                    table.append({'token': token, 'class': "Aditivo", 'line': line_index})
+                elif token in self._multiplicatives:
+                    table.append({'token': token, 'class': "Multiplicativo", 'line': line_index})
                 else:
                     table.append({'token': token, 'class': classificacao, 'line': line_index})
             

@@ -7,6 +7,8 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 from src.LexicalAnalyzer import LexicalAnalyzer
 from src.SyntacticException import SyntacticException
 from src.TypeMismatchException import TypeMismatchException
+from src.LogicalExpressionException import LogicalExpressionException
+from src.UsingNotDeclaredException import UsingNotDeclaredException
 from src.SymbolTable import SymbolTable, IdentifierInformation
 from src.TypeControl import TypeControl
 
@@ -350,20 +352,25 @@ class SyntacticAnalyzer:
             self._previous_value()
             return None
 
-    def _expression(self):
+    def _expression(self, relational_expression = False):
         self._simple_expression1()
-
+        if not relational_expression:
+            self._logical_expression()
         if self._next_value()['class'] == "Relacional":
-            # Relacional EA1
-            print("Chegou aqui")
-            print(self._current_value)
-            self._type_control.relacional_expression()
-            self._expression()
+            self._expression(relational_expression = True)
 
-            print("Chegou aqui2")
-            print(self._current_value)
-            # Relacional EA2
             self._type_control.relacional_expression()
+            self._logical_expression()
+        else:
+            self._previous_value()
+            return None
+
+    def _logical_expression(self):
+        self._next_value()
+        if self._current_value['token'] in ['and', 'or']:
+            self._expression()
+            self._type_control.logical_expression()
+            self._logical_expression()
         else:
             self._previous_value()
             return None
@@ -380,7 +387,8 @@ class SyntacticAnalyzer:
 
     def _simple_expression2(self):
         #Op aditiva já no if
-        if self._next_value()['class'] == "Aditivo":
+        self._next_value()
+        if self._current_value['class'] == "Aditivo" and self._current_value['token'] != 'or':
             self._term1()
             self._type_control.arithmetic_expression()
             self._simple_expression2()
@@ -396,7 +404,8 @@ class SyntacticAnalyzer:
 
     def _term2(self):
         #op_multiplicativo
-        if self._next_value()['class'] == 'Multiplicativo':
+        self._next_value()
+        if self._current_value['class'] == 'Multiplicativo' and self._current_value['token'] != 'and':
             self._factor()
             self._type_control.arithmetic_expression()
             self._term2()
@@ -408,6 +417,7 @@ class SyntacticAnalyzer:
             return None
 
     def _factor(self):
+        
         self._next_value()
         if self._current_value['class'] == "Número inteiro":
             self._type_control.value_usage(self._current_value['token'], 'integer')
@@ -421,7 +431,9 @@ class SyntacticAnalyzer:
             self._type_control.value_usage(self._current_value['token'], 'boolean')
             return None
 
-        elif self._current_value['class'] == "Identificador": 
+        elif self._current_value['class'] == "Identificador":  
+            print("Chegou aqui2")
+            print(self._current_value) 
             identifierAux = self._symbol_table.identifier_usage(self._current_value['token'])
             self._type_control.value_usage(identifierAux._token, identifierAux._type)
 
@@ -473,8 +485,12 @@ class SyntacticAnalyzer:
         
         except SyntacticException as exception:
             print(exception)
-        except TypeMismatchException as ex:
-            print(ex)
+        except TypeMismatchException as exception:
+            print(exception)
+        except LogicalExpressionException as exception:
+            print(exception)
+        except UsingNotDeclaredException as exception:
+            print(exception)
                     
 
 SyntacticAnalyzer('../data/input2.txt').program()

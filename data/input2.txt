@@ -6,7 +6,8 @@ var
     z : boolean;
 
 begin
-    x := 5;
-    y := 2;
-    z := x > 6 <> true;
+    {z := 2 < 1 and 50 > 20;}
+    x := v + 1;
+    z := true and ((33 <> 2.0) or (50 < 20)) or ((1 + 2) = 3);
+    {z := true and false}
 end.
