@@ -46,8 +46,8 @@ begin
 end;
 
 begin
-    x:= 5;
-    y :=6;
+    x := 5;
+    y := 6;
     sum_n_times(x, y);
     {writeln('Valor atual de x = ', x);}
 end.

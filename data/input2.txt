@@ -5,9 +5,34 @@ var
     x, y: integer;
     z : boolean;
 
+procedure sum_n_times (number, n: integer);
+    var 
+        aux: integer;{Variável que vai guardar o total da soma}
+        count, total: integer;
+    begin {Passamos o valor do número para a auxiliar}
+
+        number := total;
+    end;
+
+function fatorial(n : integer): integer;
+var
+    x: integer;
+    y: boolean;
 begin
-    {z := 2 < 1 and 50 > 20;}
-    x := v + 1;
-    z := true and ((33 <> 2.0) or (50 < 20)) or ((1 + 2) = 3);
-    {z := true and false}
+    x := 1;
+    y := x > 0 or x > 2 + 1;
+end;
+
+begin
+    {z := true and ((33 <> 2.0) or (50 < 20)) or ((1 + 2) = 3);}
+    {x := 1 + fatorial;}
+    if ((x + y) <> (1 + x) and true) then 
+                    begin
+                        x := 1 + fatorial;
+                    end
+                else
+                    begin
+                       x := 1 - fatorial;
+                    end;
+
 end.
