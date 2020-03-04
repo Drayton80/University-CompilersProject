@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join('..')))
 class LexicalAnalyzer:
     def __init__(self, input_path: str):
         with open(input_path, 'r', encoding='utf-8') as file:
-            input_text = file.read().replace('\n', '')
+            input_text = file.read().replace('\n', ' ')
             nlp = spacy.load('pt_core_news_sm')
         
         self._doc = nlp(input_text)
@@ -41,15 +41,42 @@ class LexicalAnalyzer:
             part_of_speech = 'símbolo'
         elif spacy_pos == 'NUM':
             part_of_speech = 'numeral'
+        elif spacy_pos == 'SPACE':
+            part_of_speech = 'espaçamento'
         else:
             part_of_speech = 'desconhecido'
 
         return part_of_speech
+
+    def _is_stopword(self, token: str, part_of_speech: str) -> bool:
+        if part_of_speech in ["conjunção", "preposição", "determinante", "interjeição"]:
+            return True
+        # TODO lista de contrações do português
+        elif token in []:
+            return True
+        else:
+            return False
+
     
     def create_table(self) -> list:
         table = []
         
         for element in self._doc:
-            table.append({'token': element.orth_, 'class': self._convert_part_of_speech_spacy_to_portuguese(element.pos_)})
+            # Extrai a classe gramátical da palavra e converte para português:
+            part_of_speech = self._convert_part_of_speech_spacy_to_portuguese(element.pos_)
+
+            # Checa se a palavra é um verbo:
+            if part_of_speech in ['verbo', 'verbo auxiliar']:
+                # Caso seja, extrai o verbo stemizado:
+                token = element.lemma_.lower()
+            else:
+                # Caso contrário, extrai a palavra do token:
+                token = element.orth_.lower()
+
+            # Não inclusão das stopwords:
+            if self._is_stopword(token, part_of_speech):
+                continue
+
+            table.append({'token': token, 'class': part_of_speech})
         
         return table
