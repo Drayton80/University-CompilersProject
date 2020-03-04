@@ -49,14 +49,19 @@ class LexicalAnalyzer:
         return part_of_speech
 
     def _is_stopword(self, token: str, part_of_speech: str) -> bool:
+        portuguese_contractions = [
+            'à', 'às', 'ao', 'aos', 'cum', 'do', 'da', 'dos', 'das', 'dum', 'duns', 'duma', 
+            'dumas', 'no', 'na', 'nos', 'nas', 'num', 'nuns', 'numa', 'numas', 'pro', 'pra', 
+            'pros', 'pras', 'prum', 'pruns', 'pruma', 'prumas', 'pelo', 'pela', 'pelos', 'pelas']
+        
+        portuguese_articles = ['a', 'o', 'as', 'os', 'em', 'de', 'por']
+        
         if part_of_speech in ["conjunção", "preposição", "determinante", "interjeição"]:
             return True
-        # TODO lista de contrações do português
-        elif token in []:
+        elif token in portuguese_contractions or token in portuguese_articles:
             return True
         else:
             return False
-
     
     def create_table(self) -> list:
         table = []
